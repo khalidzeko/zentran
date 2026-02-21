@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>البوابة التقنية - تسجيل الدخول</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            direction: rtl;
+            color: #2d3748;
+            padding: 20px 20px 80px 20px;
+        }
+        
+        .login-container {
+            width: 100%;
+            max-width: 420px;
+        }
+        
+        .login-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .logo {
+            font-size: 36px;
+            font-weight: 800;
+            color: #2d3748;
+            margin-bottom: 8px;
+            letter-spacing: -1px;
+            position: relative;
+            display: inline-block;
+        }
+        
+        .logo::before {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 3px;
+            background: linear-gradient(90deg, #a0aec0, #718096);
+            border-radius: 2px;
+        }
+        
+        .logo .highlight {
+            color: #a0aec0;
+        }
+        
+        .subtitle {
+            color: #718096;
+            font-size: 16px;
+            font-weight: 400;
+            line-height: 1.5;
+        }
+        
+        .alert {
+            padding: 16px 20px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            font-size: 14px;
+            font-weight: 500;
+            display: none;
+            animation: slideDown 0.3s ease-out;
+        }
+        
+        .alert.show {
+            display: block;
+        }
+        
+        .alert-error {
+            background: #fff5f5;
+            color: #c53030;
+            border: 1px solid #feb2b2;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .form-group {
+            margin-bottom: 24px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #4a5568;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 16px 20px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            direction: rtl;
+            text-align: right;
+            background: #f7fafc;
+            transition: all 0.3s ease;
+            color: #2d3748;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            background: #edf2f7;
+            transform: translateY(-1px);
+        }
+        
+        .form-input::placeholder {
+            color: #a0aec0;
+            font-weight: 400;
+        }
+        
+        .form-input.error {
+            border: 1px solid #fc8181;
+            background: #fff5f5;
+        }
+        
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        
+        .remember-me input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #a0aec0;
+        }
+        
+        .remember-me label {
+            color: #4a5568;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .login-button {
+            width: 100%;
+            padding: 16px;
+            background: #a0aec0;
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 8px;
+        }
+        
+        .login-button:hover {
+            background: #8b9bb3;
+            transform: translateY(-1px);
+        }
+        
+        .login-button:active {
+            transform: translateY(0);
+        }
+        
+        .login-button:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .footer-links {
+            margin-top: 32px;
+            text-align: center;
+        }
+        
+        .footer-link {
+            color: #2d3748;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+        
+        .footer-link:hover {
+            color: #1a202c;
+            text-decoration: none;
+        }
+        
+        .page-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            text-align: center;
+            padding: 20px;
+            background: #ffffff;
+        }
+        
+        .footer-brand {
+            font-size: 14px;
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 5px;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .footer-brand img {
+            height: 20px;
+            width: auto;
+        }
+        
+        .footer-brand .footer-logo {
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+        
+        .footer-brand .footer-highlight {
+            color: #a0aec0;
+        }
+        
+        .footer-copyright {
+            font-size: 12px;
+            color: #718096;
+            font-weight: 400;
+        }
+        
+        @media (max-width: 480px) {
+            body {
+                padding: 16px 16px 80px 16px;
+            }
+            
+            .logo {
+                font-size: 28px;
+            }
+            
+            .form-input, .login-button {
+                padding: 14px 16px;
+            }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <div class="logo">ZEN<span class="highlight">TRA</span></div>
+            <div class="subtitle">نظام إدارة التذاكر</div>
+        </div>
+       
+        <div class="login-form">
+            <div id="errorAlert" class="alert alert-error">
+                اسم المستخدم أو كلمة المرور غير صحيحة
+            </div>
+            
+            <form method="post" id="loginForm">
+                <div class="form-group">
+                    <label for="username">اسم المستخدم</label>
+                    <input type="text" id="username" name="username" class="form-input" placeholder="اسم المستخدم" required>
+                </div>
+               
+                <div class="form-group">
+                    <label for="password">كلمة المرور</label>
+                    <input type="password" id="password" name="password" class="form-input" placeholder="كلمة المرور" required>
+                </div>
+                
+                <div class="remember-me">
+                    <input type="checkbox" id="rememberMe" name="rememberMe">
+                    <label for="rememberMe">تذكرني</label>
+                </div>
+               
+                <button type="submit" class="login-button" id="loginButton">
+                    <span id="buttonText">تسجيل الدخول</span>
+                </button>
+            </form>
+            
+            <div class="footer-links">
+                <a href="#" class="footer-link">نسيت كلمة المرور؟</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="page-footer">
+        <div class="footer-brand">
+            <img src="/static/exp.png" alt="Experience Logo">
+            | <span class="footer-logo">ZEN<span class="footer-highlight">TRA</span></span>
+        </div>
+        <div class="footer-copyright">جميع الحقوق محفوظة 2025</div>
+    </div>
+
+    <script>
+        // Load saved credentials on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const inputs = document.querySelectorAll('.form-input');
+            const usernameInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
+            const rememberMeCheckbox = document.getElementById('rememberMe');
+            const loginForm = document.getElementById('loginForm');
+            const loginButton = document.getElementById('loginButton');
+            const errorAlert = document.getElementById('errorAlert');
+            
+            // Check if there's an error in the URL (after failed login)
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('error') === 'invalid_credentials') {
+                showError('اسم المستخدم أو كلمة المرور غير صحيحة');
+            }
+            
+            // Load saved credentials
+            const savedUsername = getCookie('savedUsername');
+            const savedPassword = getCookie('savedPassword');
+            
+            if (savedUsername && savedPassword) {
+                usernameInput.value = savedUsername;
+                passwordInput.value = savedPassword;
+                rememberMeCheckbox.checked = true;
+            }
+            
+            // Add smooth animations
+            inputs.forEach(input => {
+                input.addEventListener('focus', function() {
+                    this.parentElement.style.transform = 'scale(1.02)';
+                    this.classList.remove('error');
+                });
+                
+                input.addEventListener('blur', function() {
+                    this.parentElement.style.transform = 'scale(1)';
+                });
+            });
+            
+            // Handle forgot password link
+            const forgotPasswordLink = document.querySelector('.footer-link');
+            forgotPasswordLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                alert(' برجاء كتبابة كلمة سر الجهاز');
+            });
+            
+            // Handle form submission
+            loginForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const username = usernameInput.value;
+                const password = passwordInput.value;
+                const rememberMe = rememberMeCheckbox.checked;
+                
+                // Hide any existing errors
+                hideError();
+                
+                // Save credentials if "Remember Me" is checked
+                if (rememberMe) {
+                    setCookie('savedUsername', username, 30);
+                    setCookie('savedPassword', password, 30);
+                } else {
+                    deleteCookie('savedUsername');
+                    deleteCookie('savedPassword');
+                }
+                
+                // Submit the form normally - backend will handle authentication
+                this.submit();
+            });
+        });
+        
+        // Show error message
+        function showError(message) {
+            const errorAlert = document.getElementById('errorAlert');
+            errorAlert.textContent = message;
+            errorAlert.classList.add('show');
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                hideError();
+            }, 5000);
+        }
+        
+        // Hide error message
+        function hideError() {
+            const errorAlert = document.getElementById('errorAlert');
+            errorAlert.classList.remove('show');
+        }
+        
+        // Cookie functions
+        function setCookie(name, value, days) {
+            const date = new Date();
+            date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+            const expires = "expires=" + date.toUTCString();
+            document.cookie = name + "=" + value + ";" + expires + ";path=/";
+        }
+        
+        function getCookie(name) {
+            const nameEQ = name + "=";
+            const ca = document.cookie.split(';');
+            for (let i = 0; i < ca.length; i++) {
+                let c = ca[i];
+                while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+                if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+            }
+            return null;
+        }
+        
+        function deleteCookie(name) {
+            document.cookie = name + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        }
+    </script>
+</body>
+</html>

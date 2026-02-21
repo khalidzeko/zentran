@@ -1,0 +1,679 @@
+{# templates/edit_user.html #}
+{% extends "base.html" %}
+
+{% block title %}تعديل المستخدم - {{ user.username }} | Zentra{% endblock %}
+
+{% block extra_css %}
+<style>
+/* =========================================================
+   EDIT USER — COOL REDESIGN (matches base.html)
+   - Clean "profile card" vibe
+   - Sticky action bar
+   - Subtle glass + gradients (same neutral palette)
+========================================================= */
+
+.edit-wrap{
+  max-width: 1040px;
+  margin: 0 auto;
+  padding-bottom: 10px;
+  animation: fadeInUp .55s ease forwards;
+}
+
+/* Top row */
+.breadcrumbs{
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 6px 0 14px;
+}
+
+.crumb-left{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.crumb-left .dot{
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--border-dark);
+  opacity:.65;
+}
+
+.crumb-right{
+  display:flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Buttons (inherit base feel) */
+.btnx{
+  background: var(--primary-color);
+  color: white;
+  padding: 11px 16px;
+  border: none;
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 13px;
+  text-decoration: none;
+  display:inline-flex;
+  align-items:center;
+  gap: 8px;
+  transition: var(--transition-fast);
+  justify-content:center;
+  font-family: 'Cairo', sans-serif;
+  box-shadow: var(--shadow-sm);
+}
+
+.btnx:hover{
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.btnx.secondary{
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+}
+
+.btnx.secondary:hover{
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border-color: var(--border-dark);
+}
+
+.btnx.danger{ background: var(--danger-color); }
+.btnx.danger:hover{ background:#dc2626; }
+
+.btnx.loading{
+  opacity:.85;
+  cursor:not-allowed;
+}
+.btnx.loading::after{
+  content:'';
+  width: 16px; height: 16px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* Layout grid */
+.layout{
+  display:grid;
+  grid-template-columns: 360px 1fr;
+  gap: 16px;
+}
+
+/* Panels */
+.panel{
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  overflow:hidden;
+}
+
+.panel-head{
+  padding: 14px 16px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-light);
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.panel-head h2{
+  margin:0;
+  font-size: 14px;
+  display:flex;
+  align-items:center;
+  gap: 8px;
+  color: var(--text-primary);
+}
+
+.panel-head h2 i{ color: var(--text-secondary); }
+
+.panel-body{
+  padding: 16px;
+}
+
+/* Profile card (left) */
+.profile{
+  position: relative;
+  overflow:hidden;
+}
+
+.profile::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:
+    radial-gradient(900px 240px at 80% 0%, rgba(255,255,255,.65), transparent 60%),
+    linear-gradient(135deg, rgba(226,228,231,.95), rgba(249,250,251,.92));
+  z-index:0;
+}
+
+.profile::after{
+  content:'';
+  position:absolute;
+  inset:0;
+  background: linear-gradient(135deg, rgba(0,0,0,.03), transparent 60%);
+  z-index:0;
+}
+
+.profile-inner{
+  position:relative;
+  z-index:1;
+  padding: 18px 16px 16px;
+}
+
+.avatar{
+  width: 78px; height: 78px;
+  border-radius: 22px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color: #fff;
+  background: linear-gradient(135deg, #67626d 0%, #cccdd3 100%);
+  box-shadow: var(--shadow-lg);
+  margin-bottom: 12px;
+}
+
+.big-name{
+  font-size: 18px;
+  margin: 0 0 6px;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow:hidden;
+  text-overflow: ellipsis;
+}
+
+.subline{
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin: 0 0 12px;
+  line-height: 1.7;
+}
+
+/* Role pill */
+.pill{
+  display:inline-flex;
+  align-items:center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  border: 1px solid rgba(0,0,0,.06);
+  background: rgba(255,255,255,.75);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 8px 22px rgba(0,0,0,.06);
+  color: var(--text-primary);
+}
+
+.pill i{ opacity:.9; }
+
+.pill.role-admin{ background: rgba(254,226,226,.85); color:#991b1b; }
+.pill.role-manager{ background: rgba(254,243,199,.9); color:#92400e; }
+.pill.role-supervisor{ background: rgba(219,234,254,.9); color:#1e40af; }
+.pill.role-agent{ background: rgba(209,250,229,.9); color:#065f46; }
+.pill.role-it_staff{ background: rgba(224,231,255,.9); color:#3730a3; }
+
+/* Quick stats */
+.stats{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.stat{
+  background: rgba(255,255,255,.75);
+  border: 1px solid rgba(0,0,0,.06);
+  border-radius: 16px;
+  padding: 10px 12px;
+}
+
+.stat .k{
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+  display:flex;
+  align-items:center;
+  gap: 8px;
+}
+
+.stat .v{
+  font-size: 13px;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow:hidden;
+  text-overflow: ellipsis;
+}
+
+/* Right form "sectioned" look */
+.section{
+  border: 1px solid var(--border-light);
+  background: var(--bg-primary);
+  border-radius: 18px;
+  padding: 14px;
+  margin-bottom: 14px;
+}
+
+.section-title{
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.section-title h3{
+  margin:0;
+  font-size: 13px;
+  color: var(--text-primary);
+  display:flex;
+  align-items:center;
+  gap: 8px;
+}
+
+.section-title h3 i{ color: var(--text-secondary); }
+
+.section-title .hint{
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* Form grid */
+.form-grid{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.full{ grid-column: 1 / -1; }
+
+.field{
+  display:flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.label{
+  font-size: 12px;
+  color: var(--text-primary);
+  display:flex;
+  align-items:center;
+  gap: 8px;
+}
+
+.label i{ color: var(--text-secondary); }
+
+/* Control + inline icon */
+.input-wrap{
+  position: relative;
+}
+
+.icon{
+  position:absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: 14px;
+  pointer-events:none;
+}
+
+.control{
+  width: 100%;
+  padding: 12px 14px;
+  padding-right: 38px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 700;
+  font-family:'Cairo', sans-serif;
+  direction: rtl;
+  outline: none;
+  transition: var(--transition-fast);
+}
+
+.control:focus{
+  background: var(--bg-primary);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(0,0,0,.06);
+}
+
+.control:hover{ border-color: var(--border-dark); }
+
+.control.select{
+  appearance:none;
+  background-image:url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+  background-position:left 12px center;
+  background-repeat:no-repeat;
+  background-size:16px 16px;
+  padding-left: 40px;
+  padding-right: 14px;
+}
+
+/* Helper hint under input */
+.help{
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: -2px;
+}
+
+/* Sticky action bar (cool!) */
+.sticky-actions{
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+  margin-top: 14px;
+}
+
+.action-bar{
+  display:flex;
+  gap: 10px;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 12px;
+  border-radius: 18px;
+  background: rgba(255,255,255,.75);
+  border: 1px solid rgba(0,0,0,.08);
+  box-shadow: 0 10px 30px rgba(0,0,0,.10);
+  backdrop-filter: blur(10px);
+}
+
+.action-left{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.action-right{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  flex-wrap: wrap;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+kbd{
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: rgba(0,0,0,.06);
+  border: 1px solid rgba(0,0,0,.08);
+}
+
+/* Danger zone */
+.danger{
+  border-color: rgba(239,68,68,.22);
+  background: linear-gradient(0deg, rgba(239,68,68,.06), rgba(239,68,68,.02));
+}
+
+.danger .panel-head{
+  background: rgba(239,68,68,.06);
+  border-bottom-color: rgba(239,68,68,.18);
+}
+
+.danger-note{
+  margin: 0 0 10px;
+  color: #7f1d1d;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+/* Responsive */
+@media (max-width: 992px){
+  .layout{ grid-template-columns: 1fr; }
+}
+
+@media (max-width: 768px){
+  .form-grid{ grid-template-columns: 1fr; }
+  .action-bar{ flex-direction: column; align-items: stretch; }
+  .btnx{ width: 100%; }
+}
+
+@keyframes fadeInUp{
+  from{ opacity:0; transform: translateY(12px); }
+  to{ opacity:1; transform: translateY(0); }
+}
+
+@keyframes spin{ to{ transform: rotate(360deg); } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="edit-wrap">
+
+  <div class="breadcrumbs">
+    <div class="crumb-left">
+      <i class="fas fa-users-cog"></i>
+      <span>إدارة المستخدمين</span>
+      <span class="dot"></span>
+      <span style="color:var(--text-primary);">تعديل حساب</span>
+    </div>
+
+    <div class="crumb-right">
+      <a class="btnx secondary" href="{{ url_for('manage_users') }}">
+        <i class="fas fa-arrow-right"></i> رجوع للقائمة
+      </a>
+    </div>
+  </div>
+
+  <div class="layout">
+
+    <!-- LEFT: Profile card -->
+    <div class="panel profile">
+      <div class="profile-inner">
+        <div class="avatar"><i class="fas fa-user-astronaut"></i></div>
+
+        <h1 class="big-name">{{ user.full_name or user.username }}</h1>
+        <p class="subline">
+          تعديل بيانات المستخدم وصلاحياته بشكل سريع وآمن.
+          <br>
+          المستخدم: <span style="color:var(--text-primary);">{{ user.username }}</span>
+        </p>
+
+        <span class="pill role-{{ user.role }}">
+          <i class="fas fa-tag"></i>
+          {% if user.role == 'admin' %}مدير نظام
+          {% elif user.role == 'it_staff' %}فريق تقني
+          {% elif user.role == 'manager' %}مدير
+          {% elif user.role == 'supervisor' %}مشرف
+          {% else %}مستخدم{% endif %}
+        </span>
+
+        <div class="stats">
+          <div class="stat">
+            <div class="k"><i class="fas fa-envelope"></i> البريد</div>
+            <div class="v" title="{{ user.email }}">{{ user.email }}</div>
+          </div>
+          <div class="stat">
+            <div class="k"><i class="fas fa-door-open"></i> الغرفة</div>
+            <div class="v" title="{{ user.room }}">{{ user.room }}</div>
+          </div>
+        </div>
+
+        <div style="margin-top:14px; color:var(--text-secondary); font-size:12px; line-height:1.7;">
+          <i class="fas fa-shield-alt" style="color:var(--text-muted);"></i>
+          نصيحة: غيّر كلمة المرور فقط عند الحاجة، واتركها فارغة للاحتفاظ بالحالية.
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Form -->
+    <div>
+      <div class="panel">
+        <div class="panel-head">
+          <h2><i class="fas fa-sliders-h"></i> لوحة التعديل</h2>
+          <span style="font-size:12px; color:var(--text-muted);">
+            <i class="fas fa-clock"></i> حفظ سريع
+          </span>
+        </div>
+
+        <div class="panel-body">
+          <form method="POST" action="{{ url_for('edit_user', user_id=user.id) }}" id="editUserForm">
+
+            <div class="section">
+              <div class="section-title">
+                <h3><i class="fas fa-id-badge"></i> معلومات الحساب</h3>
+                <div class="hint">الحقول الأساسية</div>
+              </div>
+
+              <div class="form-grid">
+                <div class="field">
+                  <div class="label"><i class="fas fa-user"></i> الاسم الكامل</div>
+                  <div class="input-wrap">
+                    <i class="icon fas fa-id-card"></i>
+                    <input class="control" type="text" name="full_name" value="{{ user.full_name }}" required>
+                  </div>
+                </div>
+
+                <div class="field">
+                  <div class="label"><i class="fas fa-envelope"></i> البريد الإلكتروني</div>
+                  <div class="input-wrap">
+                    <i class="icon fas fa-at"></i>
+                    <input class="control" type="email" name="email" value="{{ user.email }}" required>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="section">
+              <div class="section-title">
+                <h3><i class="fas fa-user-shield"></i> الصلاحيات والموقع</h3>
+                <div class="hint">الدور + الغرفة</div>
+              </div>
+
+              <div class="form-grid">
+                <div class="field">
+                  <div class="label"><i class="fas fa-user-tag"></i> الدور</div>
+                  <div class="input-wrap">
+                    <i class="icon fas fa-tag"></i>
+                    <select class="control select" name="role" required>
+                      <option value="agent" {% if user.role == 'agent' %}selected{% endif %}>مستخدم</option>
+                      <option value="supervisor" {% if user.role == 'supervisor' %}selected{% endif %}>مشرف</option>
+                      <option value="manager" {% if user.role == 'manager' %}selected{% endif %}>مدير</option>
+                      <option value="it_staff" {% if user.role == 'it_staff' %}selected{% endif %}>فريق تقني</option>
+                      <option value="admin" {% if user.role == 'admin' %}selected{% endif %}>مدير نظام</option>
+                    </select>
+                  </div>
+                  <div class="help">اختيار الدور يحدد صلاحيات المستخدم داخل Zentra</div>
+                </div>
+
+                <div class="field">
+                  <div class="label"><i class="fas fa-door-open"></i> الغرفة</div>
+                  <div class="input-wrap">
+                    <i class="icon fas fa-map-marker-alt"></i>
+                    <input class="control" type="text" name="room" value="{{ user.room }}" required>
+                  </div>
+                  <div class="help">مثال: A-101 أو غرفة 205</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="section">
+              <div class="section-title">
+                <h3><i class="fas fa-key"></i> الأمان</h3>
+                <div class="hint">اختياري</div>
+              </div>
+
+              <div class="form-grid">
+                <div class="field full">
+                  <div class="label"><i class="fas fa-lock"></i> إعادة تعيين كلمة المرور</div>
+                  <div class="input-wrap">
+                    <i class="icon fas fa-asterisk"></i>
+                    <input class="control" type="password" name="password" autocomplete="new-password">
+                  </div>
+                  <div class="help">اتركها فارغة للاحتفاظ بكلمة المرور الحالية</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sticky action bar -->
+            <div class="sticky-actions">
+              <div class="action-bar">
+                <div class="action-left">
+                  <button type="submit" class="btnx" id="saveBtn">
+                    <i class="fas fa-save"></i> حفظ التغييرات
+                  </button>
+
+                  <a class="btnx secondary" href="{{ url_for('manage_users') }}">
+                    <i class="fas fa-arrow-right"></i> رجوع
+                  </a>
+                </div>
+
+                <div class="action-right">
+                  <span><i class="fas fa-keyboard"></i> اختصار:</span>
+                  <kbd>Ctrl</kbd> + <kbd>S</kbd>
+                </div>
+              </div>
+            </div>
+
+          </form>
+        </div>
+      </div>
+
+      <!-- Danger zone -->
+      <div class="panel danger" style="margin-top:16px;">
+        <div class="panel-head">
+          <h2 style="color:var(--danger-color);"><i class="fas fa-exclamation-triangle"></i> منطقة الخطر</h2>
+        </div>
+        <div class="panel-body">
+          <p class="danger-note">
+            حذف المستخدم إجراء نهائي ولا يمكن التراجع عنه. سيتم حذف بياناته المرتبطة.
+          </p>
+
+          <form method="POST"
+                action="{{ url_for('delete_user', user_id=user.id) }}"
+                onsubmit="return confirm('هل أنت متأكد من حذف هذا المستخدم؟ لا يمكن التراجع عن هذا الإجراء!');">
+            <button type="submit" class="btnx danger">
+              <i class="fas fa-trash-alt"></i> حذف المستخدم
+            </button>
+          </form>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const form = document.getElementById('editUserForm');
+  const btn  = document.getElementById('saveBtn');
+
+  if (form && btn) {
+    form.addEventListener('submit', function () {
+      btn.classList.add('loading');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جارٍ الحفظ...';
+    });
+  }
+
+  // Ctrl + S to save
+  document.addEventListener('keydown', function (e) {
+    if (e.ctrlKey && (e.key === 's' || e.key === 'S')) {
+      e.preventDefault();
+      if (form) (form.requestSubmit ? form.requestSubmit() : form.submit());
+    }
+  });
+});
+</script>
+{% endblock %}

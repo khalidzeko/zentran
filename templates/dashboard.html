@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block title %}ZENTRA - لوحة التحكم{% endblock %}
+
+{% block page_title %}لوحة التحكم{% endblock %}
+
+{% block content %}
+    <!-- قسم التصفية -->
+    <div class="filter-section">
+        <div class="filter-title">
+            <i class="fas fa-filter"></i>
+            تصفية التذاكر
+        </div>
+        
+        <div class="filter-content">
+            <!-- تبويبات التصفية -->
+            {% if current_user.role != 'agent' %}
+            <div class="filter-tabs">
+                <a href="{{ url_for('dashboard') }}" class="filter-tab {% if not request.args.get('filter') or request.args.get('filter') == 'all' %}active{% endif %}">الكل</a>
+                <a href="{{ url_for('dashboard', filter='assigned') }}" class="filter-tab {% if request.args.get('filter') == 'assigned' %}active{% endif %}">المُسندة لي</a>
+                <a href="{{ url_for('dashboard', filter='new') }}" class="filter-tab {% if request.args.get('filter') == 'new' %}active{% endif %}">غير مُسندة</a>
+            </div>
+            
+            <div class="filter-divider"></div>
+            {% endif %}
+
+            <!-- نموذج التصفية -->
+            <form class="filter-form" method="GET">
+                <input type="hidden" name="filter" value="{{ request.args.get('filter', '') }}">
+                
+                {% if current_user.role != 'agent' %}
+                <div class="form-group">
+                    <label class="form-label" for="status">الحالة:</label>
+                    <select id="status" name="status" class="form-control">
+                        <option value="">الكل</option>
+                        <option value="Open" {% if request.args.get('status') == 'Open' %}selected{% endif %}>مفتوح</option>
+                        <option value="In Progress" {% if request.args.get('status') == 'In Progress' %}selected{% endif %}>جارٍ العمل</option>
+                        <option value="Escalated" {% if request.args.get('status') == 'Escalated' %}selected{% endif %}>مُصعد</option>
+                        <option value="Resolved" {% if request.args.get('status') == 'Resolved' %}selected{% endif %}>تم الحل</option>
+                        <option value="Closed" {% if request.args.get('status') == 'Closed' %}selected{% endif %}>مغلق</option>
+                    </select>
+                </div>
+                {% endif %}
+
+                <div class="form-group">
+                    <label class="form-label" for="date">التاريخ:</label>
+                    <input type="date" id="date" name="date" class="form-control" value="{{ request.args.get('date', '') }}" />
+                </div>
+
+                <button type="submit" class="btn">
+                    <i class="fas fa-search"></i>
+                    بحث
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- قسم التذاكر -->
+    <section class="tickets-section">
+        <div class="section-header">
+            <h3 class="section-title">تذاكرك ({{ pagination.total if pagination else tickets|length }})</h3>
+        </div>
+
+        {% if tickets %}
+        <ul class="ticket-list">
+            {% for ticket in tickets %}
+            <li class="ticket-item" onclick="navigateToTicket('/ticket/{{ ticket.id }}', this)" data-ticket-id="{{ ticket.id }}">
+                <div class="ticket-info">
+                    <a href="/ticket/{{ ticket.id }}" class="ticket-link" onclick="event.stopPropagation();">
+                        #{{ ticket.id }} - {{ ticket.category }}
+                    </a>
+                    <div class="ticket-meta">
+                        <div class="ticket-meta-item">
+                            <i class="fas fa-calendar"></i>
+                            <span><strong>تاريخ الإرسال:</strong> {{ ticket.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                        </div>
+                        <div class="ticket-meta-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span><strong>الغرفة:</strong> {{ ticket.room }}</span>
+                        </div>
+                        <div class="ticket-meta-item">
+                            <i class="fas fa-user"></i>
+                            <span><strong>المُرسل:</strong> {{ ticket.submitter.full_name }}</span>
+                        </div>
+                        <div class="ticket-meta-item">
+                            <i class="fas fa-user-tie"></i>
+                            <span><strong>مُسند إلى:</strong> {% if ticket.assigned_to %}{{ ticket.assigned_to.full_name }}{% else %}غير مُسند{% endif %}</span>
+                        </div>
+                    </div>
+                    <!-- عرض وصف مقتطع -->
+                    <div class="ticket-description">
+                        {{ ticket.description[:100] }}{% if ticket.description|length > 100 %}...{% endif %}
+                    </div>
+                </div>
+                <div class="ticket-status">
+                    <span class="status-badge status-{{ ticket.status.lower().replace(' ', '-') }}">{{ ticket.status }}</span>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+
+        <!-- Pagination Controls -->
+        {% if pagination and pagination.pages > 1 %}
+        <div class="pagination-container">
+            <nav class="pagination" aria-label="التنقل بين الصفحات">
+                <!-- Previous Page -->
+                {% if pagination.has_prev %}
+                    <a href="{{ url_for('dashboard', page=pagination.prev_num, filter=request.args.get('filter', ''), status=request.args.get('status', ''), date=request.args.get('date', '')) }}" 
+                       class="page-link" 
+                       aria-label="الصفحة السابقة">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                {% else %}
+                    <span class="page-link disabled" aria-disabled="true">
+                        <i class="fas fa-chevron-right"></i>
+                    </span>
+                {% endif %}
+
+                <!-- Page Numbers -->
+                {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                    {% if page_num %}
+                        {% if page_num == pagination.page %}
+                            <span class="page-link active" aria-current="page">{{ page_num }}</span>
+                        {% else %}
+                            <a href="{{ url_for('dashboard', page=page_num, filter=request.args.get('filter', ''), status=request.args.get('status', ''), date=request.args.get('date', '')) }}" 
+                               class="page-link"
+                               aria-label="الصفحة {{ page_num }}">{{ page_num }}</a>
+                        {% endif %}
+                    {% else %}
+                        <span class="page-link disabled">...</span>
+                    {% endif %}
+                {% endfor %}
+
+                <!-- Next Page -->
+                {% if pagination.has_next %}
+                    <a href="{{ url_for('dashboard', page=pagination.next_num, filter=request.args.get('filter', ''), status=request.args.get('status', ''), date=request.args.get('date', '')) }}" 
+                       class="page-link"
+                       aria-label="الصفحة التالية">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                {% else %}
+                    <span class="page-link disabled" aria-disabled="true">
+                        <i class="fas fa-chevron-left"></i>
+                    </span>
+                {% endif %}
+            </nav>
+            
+            <!-- Page Info -->
+            <div class="page-info">
+                صفحة {{ pagination.page }} من {{ pagination.pages }} ({{ pagination.total }} تذكرة)
+            </div>
+        </div>
+        {% endif %}
+
+        {% else %}
+        <div class="no-tickets">
+            <i class="fas fa-inbox" style="font-size: 48px; margin-bottom: 16px; color: var(--text-muted);"></i>
+            <h3>لا توجد تذاكر</h3>
+            <p>{% if request.args.get('status') or request.args.get('date') %}حاول تعديل مرشحاتك أو{% else %}يمكنك{% endif %} <a href="/submit_ticket">إنشاء تذكرة جديدة</a> للبدء.</p>
+        </div>
+        {% endif %}
+    </section>
+{% endblock %}

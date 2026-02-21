@@ -1,0 +1,299 @@
+{% extends "base.html" %}
+
+{% block title %}ZENTRA - {{ 'تعديل' if asset else 'إضافة' }} أصل{% endblock %}
+{% block page_title %}{{ 'تعديل الأصل: ' + asset.asset_tag if asset else 'إضافة أصل جديد' }}{% endblock %}
+
+{% block extra_head %}
+<!-- Tom Select CSS -->
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.min.css" rel="stylesheet">
+
+<style>
+.form-card {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    max-width: 900px;
+    margin: 0 auto;
+}
+.form-card-header {
+    background: var(--bg-secondary);
+    padding: 18px 28px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex; align-items: center; gap: 12px;
+}
+.form-card-header i { font-size:20px; color:#2d3748; }
+.form-card-header h2 { font-size:16px; font-weight:800; color:var(--text-primary); font-family:'Cairo',sans-serif; margin:0; }
+.form-body { padding: 28px; }
+.form-section-title {
+    font-size:13px; font-weight:800; color:var(--text-muted);
+    font-family:'Cairo',sans-serif; letter-spacing:.5px;
+    margin: 24px 0 14px; padding-bottom:6px;
+    border-bottom: 2px solid var(--border-color);
+    text-transform: uppercase;
+}
+.form-section-title:first-of-type { margin-top:0; }
+.form-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.form-grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; }
+.field { display:flex; flex-direction:column; gap:5px; }
+.field label { font-size:13px; font-weight:800; color:var(--text-secondary); font-family:'Cairo',sans-serif; }
+.field label .req { color:#ef4444; margin-right:3px; }
+.field input, .field select, .field textarea {
+    padding: 8px 12px; border: 1px solid var(--border-color);
+    border-radius: var(--radius-md); font-family:'Cairo',sans-serif;
+    font-weight:700; font-size:14px; direction:rtl; background:var(--bg-primary);
+    transition: var(--transition-fast);
+}
+.field input:focus, .field select:focus, .field textarea:focus {
+    outline:none; border-color:#2d3748;
+    box-shadow: 0 0 0 3px rgba(45,55,72,.1);
+}
+.field textarea { resize:vertical; min-height:80px; }
+.form-footer {
+    background: var(--bg-secondary); border-top:1px solid var(--border-color);
+    padding:18px 28px; display:flex; align-items:center; gap:12px; justify-content:flex-end;
+}
+.btn-cancel {
+    background: transparent; color:var(--text-secondary);
+    border:1px solid var(--border-color); padding:9px 20px;
+    border-radius:var(--radius-md); font-family:'Cairo',sans-serif;
+    font-weight:700; font-size:14px; text-decoration:none;
+    display:inline-flex; align-items:center; gap:6px;
+    transition:var(--transition-fast);
+}
+.btn-cancel:hover { background:var(--bg-tertiary); color:var(--text-primary); }
+.btn-save {
+    background:#2d3748; color:#fff; border:none;
+    padding:9px 24px; border-radius:var(--radius-md);
+    font-family:'Cairo',sans-serif; font-weight:800; font-size:14px;
+    cursor:pointer; display:inline-flex; align-items:center; gap:6px;
+    transition:var(--transition-fast);
+}
+.btn-save:hover { background:#1a202c; }
+
+/* ── Tom Select overrides to match form style ── */
+.ts-wrapper .ts-control {
+    padding: 7px 12px !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: var(--radius-md) !important;
+    font-family: 'Cairo', sans-serif !important;
+    font-weight: 700 !important;
+    font-size: 14px !important;
+    direction: rtl;
+    background: var(--bg-primary) !important;
+    box-shadow: none !important;
+    min-height: unset !important;
+    cursor: text;
+}
+.ts-wrapper.focus .ts-control {
+    border-color: #2d3748 !important;
+    box-shadow: 0 0 0 3px rgba(45,55,72,.1) !important;
+}
+.ts-dropdown {
+    font-family: 'Cairo', sans-serif !important;
+    font-size: 14px !important;
+    direction: rtl;
+    border: 1px solid var(--border-color) !important;
+    border-radius: var(--radius-md) !important;
+    box-shadow: var(--shadow-sm) !important;
+}
+.ts-dropdown .option {
+    padding: 8px 12px !important;
+    direction: rtl;
+}
+.ts-dropdown .option:hover,
+.ts-dropdown .option.active {
+    background: #2d3748 !important;
+    color: #fff !important;
+}
+.ts-dropdown .no-results {
+    padding: 8px 12px;
+    color: var(--text-muted);
+    font-family: 'Cairo', sans-serif;
+}
+/* Clear button */
+.ts-wrapper .clear-button {
+    font-size: 16px;
+    color: var(--text-muted);
+    margin-left: 4px;
+}
+.ts-wrapper .clear-button:hover { color: #ef4444; }
+
+/* Search input inside Tom Select */
+.ts-control input {
+    font-family: 'Cairo', sans-serif !important;
+    font-size: 14px !important;
+    direction: rtl !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    background: transparent !important;
+}
+
+@media(max-width:768px) {
+    .form-grid, .form-grid-3 { grid-template-columns:1fr; }
+    .form-body { padding:18px; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-card">
+    <div class="form-card-header">
+        <i class="fas fa-{{ 'pen' if asset else 'plus-circle' }}"></i>
+        <h2>{{ 'تعديل بيانات الأصل' if asset else 'إضافة أصل جديد إلى قاعدة البيانات' }}</h2>
+    </div>
+
+    <form method="POST" action="{{ url_for('asset_edit', asset_id=asset.id) if asset else url_for('asset_create') }}">
+    <div class="form-body">
+
+        <!-- Basic Info -->
+        <div class="form-section-title">المعلومات الأساسية</div>
+        <div class="form-grid">
+            <div class="field">
+                <label>رقم الأصل <span class="req">*</span></label>
+                <input type="text" name="asset_tag" required placeholder="مثال: EXP-PC-0042"
+                       value="{{ asset.asset_tag if asset else '' }}">
+            </div>
+            <div class="field">
+                <label>اسم الأصل <span class="req">*</span></label>
+                <input type="text" name="name" required placeholder="مثال: كمبيوتر مكتب المدير"
+                       value="{{ asset.name if asset else '' }}">
+            </div>
+            <div class="field">
+                <label>الفئة <span class="req">*</span></label>
+                <select name="category" required>
+                    {% for cat in categories %}
+                    <option value="{{ cat }}" {{ 'selected' if asset and asset.category == cat }}>{{ cat }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="field">
+                <label>الحالة <span class="req">*</span></label>
+                <select name="status" required>
+                    {% for st in statuses %}
+                    <option value="{{ st }}" {{ 'selected' if asset and asset.status == st }}>{{ st }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <!-- Hardware Details -->
+        <div class="form-section-title">تفاصيل الجهاز</div>
+        <div class="form-grid-3">
+            <div class="field">
+                <label>الشركة المصنعة</label>
+                <input type="text" name="brand" placeholder="Dell / HP / Cisco ..."
+                       value="{{ asset.brand if asset else '' }}">
+            </div>
+            <div class="field">
+                <label>الموديل</label>
+                <input type="text" name="model" placeholder="Latitude 5540 ..."
+                       value="{{ asset.model if asset else '' }}">
+            </div>
+            <div class="field">
+                <label>الرقم التسلسلي</label>
+                <input type="text" name="serial_number" placeholder="S/N"
+                       value="{{ asset.serial_number if asset else '' }}">
+            </div>
+            <div class="field">
+                <label>عنوان IP</label>
+                <input type="text" name="ip_address" placeholder="192.168.1.xxx"
+                       value="{{ asset.ip_address if asset else '' }}">
+            </div>
+            <div class="field">
+                <label>عنوان MAC</label>
+                <input type="text" name="mac_address" placeholder="AA:BB:CC:DD:EE:FF"
+                       value="{{ asset.mac_address if asset else '' }}">
+            </div>
+            <div class="field">
+                <label>الحالة الجسمية</label>
+                <select name="condition">
+                    {% for cond in conditions %}
+                    <option value="{{ cond }}" {{ 'selected' if asset and asset.condition == cond }}>{{ cond }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <!-- Location & Assignment -->
+        <div class="form-section-title">الموقع والتعيين</div>
+        <div class="form-grid">
+            <div class="field">
+                <label>الغرفة / الموقع</label>
+                <input type="text" name="room" placeholder="مثال: HQ / Lab-A / Server Room"
+                       value="{{ asset.room if asset else '' }}">
+            </div>
+            <div class="field">
+                <label>مُسند إلى</label>
+                <!-- id="assigned_to_id" is required for Tom Select to attach -->
+                <select name="assigned_to_id" id="assigned_to_id">
+                    <option value="">— غير مُسند —</option>
+                    {% for u in users %}
+                    <option value="{{ u.id }}" {{ 'selected' if asset and asset.assigned_to_id == u.id }}>
+                        {{ u.full_name }} ({{ u.username }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <!-- Financial -->
+        <div class="form-section-title">المعلومات المالية والضمان</div>
+        <div class="form-grid-3">
+            <div class="field">
+                <label>تاريخ الشراء</label>
+                <input type="date" name="purchase_date"
+                       value="{{ asset.purchase_date.strftime('%Y-%m-%d') if asset and asset.purchase_date else '' }}">
+            </div>
+            <div class="field">
+                <label>نهاية الضمان</label>
+                <input type="date" name="warranty_until"
+                       value="{{ asset.warranty_until.strftime('%Y-%m-%d') if asset and asset.warranty_until else '' }}">
+            </div>
+            <div class="field">
+                <label>التكلفة (ر.س)</label>
+                <input type="number" name="cost" step="0.01" min="0" placeholder="0.00"
+                       value="{{ asset.cost if asset and asset.cost else '' }}">
+            </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="form-section-title">ملاحظات</div>
+        <div class="field">
+            <textarea name="notes" placeholder="أي ملاحظات إضافية ...">{{ asset.notes if asset else '' }}</textarea>
+        </div>
+
+    </div><!-- /form-body -->
+
+    <div class="form-footer">
+        <a href="{{ url_for('asset_detail', asset_id=asset.id) if asset else url_for('assets_list') }}" class="btn-cancel">
+            <i class="fas fa-times"></i> إلغاء
+        </a>
+        <button type="submit" class="btn-save">
+            <i class="fas fa-save"></i> {{ 'حفظ التعديلات' if asset else 'إضافة الأصل' }}
+        </button>
+    </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Tom Select JS -->
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+<script>
+  new TomSelect('#assigned_to_id', {
+    allowEmptyOption: true,         // keep "— غير مُسند —" option
+    placeholder: 'ابحث باسم المستخدم أو اسم الحساب...',
+    searchField: ['text'],          // search inside option text
+    maxOptions: null,               // show all results
+    plugins: ['clear_button'],      // ✕ button to clear selection
+    render: {
+      no_results: function() {
+        return '<div class="no-results">لا توجد نتائج مطابقة</div>';
+      }
+    }
+  });
+</script>
+{% endblock %}

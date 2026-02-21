@@ -1,0 +1,307 @@
+{% extends "base.html" %}
+
+{% block title %}ZENTRA - {{ asset.asset_tag }}{% endblock %}
+{% block page_title %}تفاصيل الأصل: {{ asset.asset_tag }}{% endblock %}
+
+{% block extra_head %}
+<style>
+.detail-layout {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 18px;
+    max-width: 1200px;
+}
+.detail-card {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+}
+.detail-card-header {
+    background: var(--bg-secondary);
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex; align-items: center; justify-content: space-between;
+}
+.detail-card-header h2 {
+    font-size: 15px; font-weight: 800; color: var(--text-primary);
+    font-family: 'Cairo', sans-serif; margin: 0;
+    display: flex; align-items: center; gap: 8px;
+}
+.detail-body { padding: 24px; }
+
+/* Hero tag block */
+.asset-hero {
+    display: flex; align-items: center; gap: 16px;
+    padding-bottom: 20px; margin-bottom: 20px;
+    border-bottom: 1px solid var(--border-light);
+}
+.asset-hero-icon {
+    width: 56px; height: 56px;
+    background: #edf2f7; border-radius: var(--radius-lg);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; color: #2d3748; flex-shrink: 0;
+}
+.asset-hero-name { font-size: 20px; font-weight: 800; color: var(--text-primary); font-family: 'Cairo', sans-serif; }
+.asset-hero-tag  { font-size: 13px; color: var(--text-muted); font-family: monospace; margin-top: 3px; }
+
+/* Info grid */
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+}
+.info-item { display: flex; flex-direction: column; gap: 3px; }
+.info-label { font-size: 11px; font-weight: 800; color: var(--text-muted); font-family: 'Cairo', sans-serif; letter-spacing: .5px; text-transform: uppercase; }
+.info-value { font-size: 14px; font-weight: 800; color: var(--text-primary); font-family: 'Cairo', sans-serif; }
+.info-value.mono { font-family: monospace; font-size: 13px; }
+
+.section-sep { margin: 20px 0; border: none; border-top: 1px solid var(--border-light); }
+
+/* Status badge */
+.abadge {
+    display: inline-block; padding: 5px 12px; border-radius: var(--radius-full);
+    font-size: 12px; font-weight: 800; font-family: 'Cairo', sans-serif; white-space: nowrap;
+}
+.abadge-available   { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
+.abadge-inuse       { background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; }
+.abadge-maintenance { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+.abadge-retired     { background: #f3f4f6; color: #6b7280; border: 1px solid #d1d5db; }
+.abadge-lost        { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+
+/* Condition */
+.cond-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 13px; font-weight: 800; font-family: 'Cairo', sans-serif;
+}
+.cond-dot { width: 9px; height: 9px; border-radius: 50%; }
+.cond-good { background: #10b981; }
+.cond-fair { background: #f59e0b; }
+.cond-poor { background: #ef4444; }
+.cond-damaged { background: #6b7280; }
+
+/* Action buttons */
+.action-bar {
+    display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+}
+.btn-action {
+    padding: 8px 18px; border-radius: var(--radius-md);
+    font-family: 'Cairo', sans-serif; font-weight: 800; font-size: 13px;
+    text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
+    border: 1px solid; cursor: pointer; transition: var(--transition-fast);
+}
+.btn-edit   { background: #2d3748; color: #fff; border-color: #2d3748; }
+.btn-edit:hover { background: #1a202c; }
+.btn-back   { background: transparent; color: var(--text-secondary); border-color: var(--border-dark); }
+.btn-back:hover { background: var(--bg-secondary); }
+.btn-del    { background: transparent; color: #991b1b; border-color: #fca5a5; }
+.btn-del:hover { background: #fee2e2; }
+
+/* History timeline */
+.history-list { padding: 0; list-style: none; margin: 0; }
+.history-item {
+    padding: 12px 0; border-bottom: 1px solid var(--border-light);
+    display: flex; gap: 10px; align-items: flex-start;
+}
+.history-item:last-child { border-bottom: none; padding-bottom: 0; }
+.history-icon {
+    width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px;
+}
+.history-icon.created  { background: #d1fae5; color: #065f46; }
+.history-icon.updated  { background: #dbeafe; color: #1e40af; }
+.history-icon.default  { background: #edf2f7; color: #4a5568; }
+.history-action { font-size: 13px; font-weight: 800; color: var(--text-primary); font-family: 'Cairo', sans-serif; }
+.history-detail { font-size: 12px; color: var(--text-muted); font-family: 'Cairo', sans-serif; margin-top: 2px; }
+.history-meta   { font-size: 11px; color: var(--text-light); font-family: 'Cairo', sans-serif; margin-top: 2px; }
+
+@media (max-width: 900px) {
+    .detail-layout { grid-template-columns: 1fr; }
+    .info-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 600px) {
+    .info-grid { grid-template-columns: 1fr; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Back + Actions -->
+<div class="action-bar" style="margin-bottom:16px;">
+    <a href="{{ url_for('assets_list') }}" class="btn-action btn-back">
+        <i class="fas fa-arrow-right"></i> العودة للقائمة
+    </a>
+    <a href="{{ url_for('asset_edit', asset_id=asset.id) }}" class="btn-action btn-edit">
+        <i class="fas fa-pen"></i> تعديل
+    </a>
+    {% if current_user.role == 'admin' %}
+    <form method="POST" action="{{ url_for('asset_delete', asset_id=asset.id) }}"
+          onsubmit="return confirm('هل أنت متأكد من حذف هذا الأصل نهائياً؟');" style="margin:0;">
+        <button type="submit" class="btn-action btn-del">
+            <i class="fas fa-trash"></i> حذف
+        </button>
+    </form>
+    {% endif %}
+</div>
+
+<div class="detail-layout">
+    <!-- LEFT: Main info -->
+    <div>
+        <div class="detail-card">
+            <div class="detail-card-header">
+                <h2><i class="fas fa-desktop"></i> بيانات الأصل</h2>
+                {% set smap = {'Available':'available','In Use':'inuse','Under Maintenance':'maintenance','Retired':'retired','Lost':'lost'} %}
+                <span class="abadge abadge-{{ smap.get(asset.status, 'available') }}">{{ asset.status }}</span>
+            </div>
+            <div class="detail-body">
+
+                <div class="asset-hero">
+                    <div class="asset-hero-icon">
+                        {% set icon_map = {
+                            'Desktop PC':'fa-desktop','Laptop':'fa-laptop','Monitor':'fa-tv',
+                            'Printer':'fa-print','Scanner':'fa-scanner','Switch':'fa-network-wired',
+                            'Router':'fa-wifi','Access Point':'fa-wifi','Server':'fa-server',
+                            'UPS':'fa-battery-full','Phone':'fa-phone','Tablet':'fa-tablet',
+                            'Projector':'fa-projector'
+                        } %}
+                        <i class="fas {{ icon_map.get(asset.category, 'fa-box') }}"></i>
+                    </div>
+                    <div>
+                        <div class="asset-hero-name">{{ asset.name }}</div>
+                        <div class="asset-hero-tag">{{ asset.asset_tag }}</div>
+                    </div>
+                </div>
+
+                <!-- Row 1: Device details -->
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">الفئة</span>
+                        <span class="info-value">{{ asset.category }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">الشركة المصنعة</span>
+                        <span class="info-value">{{ asset.brand or '—' }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">الموديل</span>
+                        <span class="info-value">{{ asset.model or '—' }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">الرقم التسلسلي</span>
+                        <span class="info-value mono">{{ asset.serial_number or '—' }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">الحالة الجسمية</span>
+                        <span class="info-value">
+                            {% set cmap = {'Good':'good','Fair':'fair','Poor':'poor','Damaged':'damaged'} %}
+                            <span class="cond-badge">
+                                <span class="cond-dot cond-{{ cmap.get(asset.condition,'good') }}"></span>
+                                {{ asset.condition }}
+                            </span>
+                        </span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">رقم الأصل</span>
+                        <span class="info-value mono">{{ asset.asset_tag }}</span>
+                    </div>
+                </div>
+
+                <hr class="section-sep">
+
+                <!-- Row 2: Network -->
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">عنوان IP</span>
+                        <span class="info-value mono">{{ asset.ip_address or '—' }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">عنوان MAC</span>
+                        <span class="info-value mono">{{ asset.mac_address or '—' }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">الغرفة / الموقع</span>
+                        <span class="info-value">{{ asset.room or '—' }}</span>
+                    </div>
+                </div>
+
+                <hr class="section-sep">
+
+                <!-- Row 3: Assignment & Finance -->
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">مُسند إلى</span>
+                        <span class="info-value">{{ asset.assigned_to.full_name if asset.assigned_to else '—' }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">تاريخ الشراء</span>
+                        <span class="info-value">{{ asset.purchase_date.strftime('%Y-%m-%d') if asset.purchase_date else '—' }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">نهاية الضمان</span>
+                        <span class="info-value">{{ asset.warranty_until.strftime('%Y-%m-%d') if asset.warranty_until else '—' }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">التكلفة</span>
+                        <span class="info-value">{{ '{:,.2f} ر.س'.format(asset.cost) if asset.cost else '—' }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">أُضيف بواسطة</span>
+                        <span class="info-value">{{ asset.created_by.full_name if asset.created_by else '—' }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">تاريخ الإضافة</span>
+                        <span class="info-value">{{ asset.created_at.strftime('%Y-%m-%d') }}</span>
+                    </div>
+                </div>
+
+                {% if asset.notes %}
+                <hr class="section-sep">
+                <div class="info-item">
+                    <span class="info-label">ملاحظات</span>
+                    <span class="info-value" style="white-space:pre-wrap;line-height:1.7;">{{ asset.notes }}</span>
+                </div>
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+
+    <!-- RIGHT: History -->
+    <div>
+        <div class="detail-card">
+            <div class="detail-card-header">
+                <h2><i class="fas fa-history"></i> سجل التغييرات</h2>
+            </div>
+            <div class="detail-body" style="padding:18px 20px;">
+                {% if asset.history %}
+                <ul class="history-list">
+                    {% for h in asset.history | sort(attribute='created_at', reverse=true) %}
+                    <li class="history-item">
+                        <div class="history-icon {% if h.action == 'Created' %}created{% elif h.action == 'Updated' %}updated{% else %}default{% endif %}">
+                            <i class="fas {% if h.action == 'Created' %}fa-plus{% elif h.action == 'Updated' %}fa-pen{% else %}fa-exchange-alt{% endif %}"></i>
+                        </div>
+                        <div>
+                            <div class="history-action">{{ h.action }}</div>
+                            {% if h.detail %}
+                            <div class="history-detail">{{ h.detail }}</div>
+                            {% endif %}
+                            <div class="history-meta">
+                                {{ h.changed_by.full_name }} · {{ h.created_at.strftime('%Y-%m-%d %H:%M') }}
+                            </div>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <div style="text-align:center;color:var(--text-muted);padding:30px 0;">
+                    <i class="fas fa-history" style="font-size:32px;margin-bottom:8px;display:block;"></i>
+                    لا توجد سجلات بعد
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,428 @@
+{# templates/create_user.html #}
+{% extends "base.html" %}
+
+{% block title %}إنشاء مستخدم جديد - Zentra{% endblock %}
+
+{% block extra_css %}
+<style>
+/* =========================
+   Page-only styles (Create User)
+   Works with your base.html header/sidebar/footer
+   ========================= */
+
+/* Content wrapper */
+.page-wrap{
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* Hero / Welcome */
+.page-hero{
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+  color: #fff;
+  border-radius: var(--radius-xl);
+  padding: 22px 22px;
+  box-shadow: var(--shadow-md);
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 18px;
+}
+.page-hero::before{
+  content:"";
+  position:absolute; inset:0;
+  background: rgba(255,255,255,.10);
+  pointer-events:none;
+}
+.page-hero > *{ position:relative; z-index:1; }
+.page-hero h1{
+  font-size: 22px;
+  margin-bottom: 6px;
+  text-shadow: 0 2px 4px rgba(0,0,0,.20);
+}
+.page-hero p{
+  font-size: 13px;
+  opacity: .9;
+}
+
+/* Flash messages (kept compatible) */
+.flash-messages{ margin: 14px 0 18px; }
+.flash-message{
+  padding: 14px 16px;
+  border-radius: var(--radius-lg);
+  margin-bottom: 10px;
+  border-right: 4px solid;
+  background: var(--bg-primary);
+  box-shadow: var(--shadow-sm);
+  display:flex; align-items:center; gap:10px;
+  font-size: 13px;
+}
+.flash-success{ border-color: var(--success-color); background: var(--success-light); }
+.flash-danger, .flash-error{ border-color: var(--danger-color); background: var(--danger-light); }
+.flash-warning{ border-color: var(--warning-color); background: var(--warning-light); }
+.flash-info{ border-color: var(--info-color); background: var(--info-light); }
+
+/* Card */
+.card{
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  overflow:hidden;
+}
+.card-head{
+  padding: 18px 18px 14px;
+  border-bottom: 1px solid var(--border-light);
+  text-align:center;
+}
+.card-head h2{
+  font-size: 18px;
+  margin-bottom: 6px;
+  color: var(--text-primary);
+}
+.card-head p{
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* Form layout */
+.form-body{ padding: 18px; }
+.grid{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.grid-full{ grid-column: 1 / -1; }
+
+.form-group{ display:flex; flex-direction:column; gap:8px; }
+.form-label{
+  font-size: 12px;
+  color: var(--text-primary);
+}
+.form-label .required{ color: var(--danger-color); margin-right: 4px; }
+
+/* Inputs */
+.input-group{ position:relative; }
+.input-icon{
+  position:absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: 13px;
+  pointer-events:none;
+}
+.control{
+  width:100%;
+  padding: 11px 14px;
+  padding-right: 40px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-family: 'Cairo', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  transition: var(--transition-fast);
+  outline:none;
+}
+.control:focus{
+  border-color: var(--primary-color);
+  background: var(--bg-primary);
+  box-shadow: 0 0 0 3px rgba(0,0,0,.06);
+}
+.control.is-valid{
+  border-color: var(--success-color);
+}
+
+/* Select arrow */
+.control.select{
+  appearance:none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+  background-position: left 12px center;
+  background-repeat: no-repeat;
+  background-size: 16px 16px;
+  padding-left: 40px;
+  padding-right: 14px;
+}
+
+/* Role description */
+.role-desc{
+  display:none;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+}
+
+/* Password strength */
+.pw-strength{ display:none; margin-top: 8px; font-size: 12px; }
+.pw-bar{
+  height: 5px;
+  background: var(--border-light);
+  border-radius: 999px;
+  overflow:hidden;
+  margin: 6px 0 4px;
+}
+.pw-fill{ height:100%; width:0%; transition: all .25s ease; border-radius: 999px; }
+.pw-weak .pw-fill{ width: 33%; background: var(--danger-color); }
+.pw-med  .pw-fill{ width: 66%; background: var(--warning-color); }
+.pw-strong .pw-fill{ width:100%; background: var(--success-color); }
+
+/* Actions */
+.actions{
+  display:flex;
+  gap: 10px;
+  justify-content:center;
+  padding: 16px 18px;
+  border-top: 1px solid var(--border-light);
+}
+.btn{
+  border:none;
+  cursor:pointer;
+  border-radius: var(--radius-md);
+  padding: 10px 16px;
+  font-family:'Cairo', sans-serif;
+  font-weight:700;
+  font-size: 13px;
+  display:inline-flex;
+  align-items:center;
+  gap: 8px;
+  text-decoration:none;
+  transition: var(--transition-fast);
+  box-shadow: var(--shadow-sm);
+}
+.btn-primary{ background: var(--success-color); color:#fff; }
+.btn-primary:hover{ filter: brightness(.95); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+.btn-secondary{ background: var(--bg-primary); border:1px solid var(--border-color); color: var(--text-secondary); }
+.btn-secondary:hover{ background: var(--bg-secondary); color: var(--text-primary); border-color: var(--border-dark); transform: translateY(-1px); }
+
+/* Responsive */
+@media (max-width: 768px){
+  .page-hero{ padding: 18px; }
+  .grid{ grid-template-columns: 1fr; }
+  .actions{ flex-direction: column; }
+  .btn{ width:100%; justify-content:center; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-wrap">
+
+  <div class="page-hero">
+    <h1>إنشاء مستخدم جديد</h1>
+    <p>إضافة مستخدم جديد إلى نظام زينترا</p>
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-messages">
+        {% for category, message in messages %}
+          <div class="flash-message flash-{{ category }}">
+            <i class="fas fa-{% if category == 'success' %}check-circle{% elif category == 'danger' or category == 'error' %}exclamation-triangle{% elif category == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %}"></i>
+            <span>{{ message }}</span>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <div class="card">
+    <div class="card-head">
+      <h2>معلومات المستخدم</h2>
+      <p>يرجى ملء جميع الحقول المطلوبة لإنشاء حساب مستخدم جديد</p>
+    </div>
+
+    <form method="post" novalidate>
+      <div class="form-body">
+        <div class="grid">
+
+          <div class="form-group">
+            <label class="form-label">اسم المستخدم <span class="required">*</span></label>
+            <div class="input-group">
+              <i class="input-icon fas fa-user"></i>
+              <input
+                type="text"
+                name="username"
+                class="control"
+                placeholder="أدخل اسم المستخدم"
+                required
+                minlength="3"
+                pattern="[a-zA-Z0-9_]+"
+                title="اسم المستخدم يجب أن يحتوي على أحرف وأرقام فقط"
+                value="{{ request.form.username or '' }}"
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">الاسم الكامل <span class="required">*</span></label>
+            <div class="input-group">
+              <i class="input-icon fas fa-id-card"></i>
+              <input
+                type="text"
+                name="full_name"
+                class="control"
+                placeholder="أدخل الاسم الكامل"
+                required
+                value="{{ request.form.full_name or '' }}"
+              />
+            </div>
+          </div>
+
+          <div class="form-group grid-full">
+            <label class="form-label">البريد الإلكتروني <span class="required">*</span></label>
+            <div class="input-group">
+              <i class="input-icon fas fa-envelope"></i>
+              <input
+                type="email"
+                name="email"
+                class="control"
+                placeholder="أدخل البريد الإلكتروني"
+                required
+                value="{{ request.form.email or '' }}"
+              />
+            </div>
+          </div>
+
+          <div class="form-group grid-full">
+            <label class="form-label">كلمة المرور <span class="required">*</span></label>
+            <div class="input-group">
+              <i class="input-icon fas fa-lock"></i>
+              <input
+                type="password"
+                name="password"
+                class="control"
+                placeholder="أدخل كلمة المرور"
+                required
+                minlength="6"
+                id="password"
+                onkeyup="checkPasswordStrength()"
+              />
+            </div>
+
+            <div class="pw-strength" id="pwStrength">
+              <div class="pw-bar"><div class="pw-fill"></div></div>
+              <div class="pw-text" id="pwText"></div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">الدور <span class="required">*</span></label>
+            <select name="role" class="control select" required onchange="showRoleDescription()">
+              <option value="">اختر دور المستخدم</option>
+              <option value="agent" {{ 'selected' if request.form.role == 'agent' else '' }}>مستخدم</option>
+              <option value="supervisor" {{ 'selected' if request.form.role == 'supervisor' else '' }}>مشرف</option>
+              <option value="manager" {{ 'selected' if request.form.role == 'manager' else '' }}>مدير</option>
+              <option value="it_staff" {{ 'selected' if request.form.role == 'it_staff' else '' }}>فريق تقني</option>
+              <option value="admin" {{ 'selected' if request.form.role == 'admin' else '' }}>مدير نظام</option>
+            </select>
+            <div class="role-desc" id="roleDesc"></div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">الغرفة <span class="required">*</span></label>
+            <div class="input-group">
+              <i class="input-icon fas fa-door-open"></i>
+              <input
+                type="text"
+                name="room"
+                class="control"
+                placeholder="مثل: أ-101، غرفة 205"
+                required
+                value="{{ request.form.room or '' }}"
+              />
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="actions">
+        <button type="submit" class="btn btn-primary">
+          <i class="fas fa-user-plus"></i>
+          إنشاء المستخدم
+        </button>
+        <a href="{{ url_for('manage_users') }}" class="btn btn-secondary">
+          <i class="fas fa-arrow-right"></i>
+          العودة لإدارة المستخدمين
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  function showRoleDescription() {
+    const roleSelect = document.querySelector('select[name="role"]');
+    const desc = document.getElementById('roleDesc');
+
+    const descriptions = {
+      agent: 'مستخدم عادي مع صلاحيات محدودة في النظام',
+      supervisor: 'يمكنه الإشراف على المستخدمين وإدارة العمليات الأساسية',
+      manager: 'يمكنه إدارة الفرق والوصول للتقارير والتحليلات',
+      it_staff: 'طاقم تقني مع صلاحية الوصول لإعدادات النظام',
+      admin: 'مدير نظام كامل مع جميع الصلاحيات'
+    };
+
+    const v = roleSelect.value;
+    if (v && descriptions[v]) {
+      desc.textContent = descriptions[v];
+      desc.style.display = 'block';
+    } else {
+      desc.style.display = 'none';
+    }
+  }
+
+  function checkPasswordStrength() {
+    const password = document.getElementById('password').value;
+    const box = document.getElementById('pwStrength');
+    const text = document.getElementById('pwText');
+
+    if (!password) {
+      box.style.display = 'none';
+      box.className = 'pw-strength';
+      text.textContent = '';
+      return;
+    }
+
+    box.style.display = 'block';
+
+    let score = 0;
+    if (password.length >= 8) score++;
+    if (/[A-Z]/.test(password)) score++;
+    if (/[a-z]/.test(password)) score++;
+    if (/\d/.test(password)) score++;
+    if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) score++;
+
+    box.className = 'pw-strength ' + (score <= 2 ? 'pw-weak' : score <= 3 ? 'pw-med' : 'pw-strong');
+    text.textContent = (score <= 2) ? 'كلمة مرور ضعيفة' : (score <= 3) ? 'كلمة مرور متوسطة' : 'كلمة مرور قوية';
+  }
+
+  // Simple validity styling
+  document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const inputs = form.querySelectorAll('input[required], select[required]');
+
+    inputs.forEach(el => {
+      el.addEventListener('input', function() {
+        if (this.checkValidity()) this.classList.add('is-valid');
+        else this.classList.remove('is-valid');
+      });
+      el.addEventListener('blur', function() {
+        if (this.checkValidity()) this.classList.add('is-valid');
+        else this.classList.remove('is-valid');
+      });
+    });
+
+    // Init role description if preselected
+    const roleSelect = document.querySelector('select[name="role"]');
+    if (roleSelect && roleSelect.value) showRoleDescription();
+  });
+</script>
+{% endblock %}

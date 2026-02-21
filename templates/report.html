@@ -1,0 +1,627 @@
+{% extends "base.html" %}
+
+{% block title %}تقارير التذاكر - ZENTRA{% endblock %}
+{% block page_title %}تقارير التذاكر{% endblock %}
+
+{% block extra_head %}
+<style>
+/* =========================
+   SECTIONS
+========================= */
+.section { margin-bottom: 16px; }
+
+.section-header{
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border-color);
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-family:'Cairo',sans-serif;
+}
+
+/* =========================
+   STATS
+========================= */
+.stats-section{
+  background: var(--bg-primary);
+  padding: 14px;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+}
+
+.stats-grid{
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+}
+
+.stat-card{
+  background: var(--bg-secondary);
+  padding: 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  text-align:center;
+  position:relative;
+  overflow:hidden;
+  transition: var(--transition-fast);
+}
+
+.stat-card::before{
+  content:'';
+  position:absolute;
+  top:0; left:0; right:0;
+  height:2px;
+  background: linear-gradient(90deg, var(--primary-color), var(--primary-hover));
+}
+
+.stat-card:hover{
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.stat-number{
+  font-size: 20px;
+  font-weight: 900;
+  margin-bottom: 4px;
+}
+
+.stat-label{
+  font-size: 10px;
+  font-weight: 900;
+  color: var(--text-secondary);
+}
+
+.stat-card.open { color: #991b1b; }
+.stat-card.in-progress { color: #92400e; }
+.stat-card.escalated { color: #6a1b9a; }
+.stat-card.resolved { color: #065f46; }
+.stat-card.closed { color: #4a5568; }
+.stat-card.total { color: var(--text-primary); }
+
+/* =========================
+   FILTER (REDESIGNED)
+========================= */
+.filter-card{
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  overflow:hidden;
+}
+
+.filter-card-header{
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  padding: 10px 14px;
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap:10px;
+}
+
+.filter-title{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  font-family:'Cairo',sans-serif;
+  font-weight: 900;
+  font-size: 13px;
+  color: var(--text-primary);
+  margin:0;
+}
+
+.filter-title i{
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.filter-subtitle{
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.filter-card-body{ padding: 12px 14px; }
+
+.filter-grid{
+  display:grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 10px;
+}
+
+.filter-field{
+  display:flex;
+  flex-direction:column;
+  gap: 6px;
+}
+
+.filter-label{
+  font-size: 10px;
+  font-weight: 900;
+  color: var(--text-secondary);
+  font-family:'Cairo',sans-serif;
+}
+
+.input-wrap{ position: relative; }
+
+.input-icon{
+  position:absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-light);
+  font-size: 13px;
+  pointer-events:none;
+}
+
+.filter-input{
+  width: 100%;
+  height: 34px;
+  padding: 6px 34px 6px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-primary);
+  font-family: 'Cairo', sans-serif;
+  font-weight: 800;
+  font-size: 11px;
+  color: var(--text-primary);
+  transition: var(--transition-fast);
+  direction: rtl;
+  text-align: right;
+}
+
+.filter-input:focus{
+  outline:none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(45,55,72,.12);
+}
+
+.filter-actions{
+  display:flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  padding-top: 10px;
+  margin-top: 10px;
+  border-top: 1px dashed var(--border-light);
+}
+
+.filter-actions .btn{
+  height: 32px;
+  padding: 6px 12px;
+  font-size: 11px;
+}
+
+.btn-ghost{
+  background: var(--bg-primary) !important;
+  color: var(--text-secondary) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+.btn-ghost:hover{
+  background: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+}
+
+/* grid spans */
+.col-3{ grid-column: span 3; }
+.col-4{ grid-column: span 4; }
+.col-6{ grid-column: span 6; }
+.col-12{ grid-column: span 12; }
+
+/* =========================
+   RESULTS
+========================= */
+.results-section{
+  background: var(--bg-primary);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  overflow:hidden;
+}
+
+.results-info{
+  padding: 10px 14px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  display:flex;
+  justify-content: space-between;
+  align-items:center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.results-count{
+  font-size: 11px;
+  font-weight: 900;
+  color: var(--text-primary);
+  display:inline-flex;
+  align-items:center;
+  gap: 8px;
+  font-family:'Cairo',sans-serif;
+}
+
+.table-container{ overflow-x:auto; }
+
+.report-table{
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 900px;
+}
+
+.report-table th{
+  background: var(--bg-secondary);
+  font-size: 11px;
+  font-weight: 900;
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--border-color);
+  text-align:right;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  font-family:'Cairo',sans-serif;
+}
+
+.report-table td{
+  font-size: 11px;
+  padding: 10px;
+  border-bottom: 1px solid var(--border-light);
+  font-weight: 800;
+  color: var(--text-secondary);
+  text-align:right;
+  vertical-align: top;
+  font-family:'Cairo',sans-serif;
+}
+
+.report-table tr:hover{ background: var(--bg-secondary); }
+
+/* badges */
+.status-badge{
+  display:inline-block;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 9px;
+  font-weight: 900;
+  font-family:'Cairo',sans-serif;
+}
+
+.status-open { background:#fee2e2; color:#991b1b; border:1px solid rgba(153,27,27,.18); }
+.status-in-progress { background:#fef3c7; color:#92400e; border:1px solid rgba(146,64,14,.18); }
+.status-escalated { background:#f3e5f5; color:#6a1b9a; border:1px solid rgba(106,27,154,.18); }
+.status-resolved { background:#d1fae5; color:#065f46; border:1px solid rgba(6,95,70,.18); }
+.status-closed { background:var(--bg-tertiary); color:#4a5568; border:1px solid rgba(74,85,104,.18); }
+
+.category-badge{
+  display:inline-block;
+  padding: 3px 8px;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-size: 10px;
+  font-weight: 900;
+  font-family:'Cairo',sans-serif;
+}
+
+/* user cell */
+.user-info{
+  display:flex;
+  align-items:center;
+  gap: 8px;
+  direction: rtl;
+}
+
+.user-avatar-sm{
+  width: 24px;
+  height: 24px;
+  background: var(--primary-color);
+  color: #fff;
+  border-radius: 50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size: 10px;
+  font-weight: 900;
+  flex-shrink:0;
+}
+
+.user-name{
+  font-weight: 900;
+  color: var(--text-primary);
+  font-size: 11px;
+  max-width: 240px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* empty */
+.empty-state{
+  text-align:center;
+  padding: 38px 16px;
+  color: var(--text-secondary);
+}
+
+.empty-state i{
+  font-size: 34px;
+  opacity: .35;
+  margin-bottom: 10px;
+  color: var(--text-muted);
+}
+
+.empty-state h3{
+  font-size: 14px;
+  font-weight: 900;
+  margin-bottom: 6px;
+  color: var(--text-primary);
+  font-family:'Cairo',sans-serif;
+}
+
+.empty-state p{
+  font-size: 11px;
+  font-weight: 800;
+  font-family:'Cairo',sans-serif;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+@media (max-width: 900px){
+  .col-3{ grid-column: span 6; }
+  .filter-subtitle{ display:none; }
+}
+
+@media (max-width: 600px){
+  .col-3{ grid-column: span 12; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- STATS -->
+<div class="section">
+  <div class="stats-section animate-fade-in">
+    <h2 class="section-header">📊 إحصائيات التذاكر</h2>
+
+    <div class="stats-grid">
+      <div class="stat-card total">
+        <div class="stat-number">{{ tickets|length }}</div>
+        <div class="stat-label">إجمالي التذاكر</div>
+      </div>
+
+      <div class="stat-card open">
+        <div class="stat-number">{{ tickets|selectattr('status','equalto','Open')|list|length }}</div>
+        <div class="stat-label">مفتوح</div>
+      </div>
+
+      <div class="stat-card in-progress">
+        <div class="stat-number">{{ tickets|selectattr('status','equalto','In Progress')|list|length }}</div>
+        <div class="stat-label">جارٍ العمل</div>
+      </div>
+
+      <div class="stat-card escalated">
+        <div class="stat-number">{{ tickets|selectattr('status','equalto','Escalated')|list|length }}</div>
+        <div class="stat-label">مُصعد</div>
+      </div>
+
+      <div class="stat-card resolved">
+        <div class="stat-number">{{ tickets|selectattr('status','equalto','Resolved')|list|length }}</div>
+        <div class="stat-label">تم الحل</div>
+      </div>
+
+      <div class="stat-card closed">
+        <div class="stat-number">{{ tickets|selectattr('status','equalto','Closed')|list|length }}</div>
+        <div class="stat-label">مغلق</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FILTER (REDESIGNED) -->
+<div class="section">
+  <div class="filter-card animate-fade-in">
+    <div class="filter-card-header">
+      <h2 class="filter-title">
+        <i class="fas fa-filter"></i>
+        تصفية التذاكر
+      </h2>
+      <div class="filter-subtitle">اختر معايير البحث ثم اضغط “تطبيق”</div>
+    </div>
+
+    <div class="filter-card-body">
+      <form method="POST" class="filter-form">
+        <div class="filter-grid">
+
+          <!-- Status -->
+          <div class="filter-field col-3">
+            <label class="filter-label">الحالة</label>
+            <div class="input-wrap">
+              <i class="fas fa-tag input-icon"></i>
+              <select name="status" class="filter-input">
+                <option value="">الكل</option>
+                <option value="Open">مفتوح</option>
+                <option value="In Progress">جارٍ العمل</option>
+                <option value="Escalated">مُصعد</option>
+                <option value="Resolved">تم الحل</option>
+                <option value="Closed">مغلق</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Room -->
+          <div class="filter-field col-3">
+            <label class="filter-label">الغرفة</label>
+            <div class="input-wrap">
+              <i class="fas fa-door-open input-icon"></i>
+              <input type="text" name="room" class="filter-input" placeholder="مثال: 101 / A-205">
+            </div>
+          </div>
+
+          <!-- Date From -->
+          <div class="filter-field col-3">
+            <label class="filter-label">من تاريخ</label>
+            <div class="input-wrap">
+              <i class="fas fa-calendar-plus input-icon"></i>
+              <input type="date" name="date_from" class="filter-input">
+            </div>
+          </div>
+
+          <!-- Date To -->
+          <div class="filter-field col-3">
+            <label class="filter-label">إلى تاريخ</label>
+            <div class="input-wrap">
+              <i class="fas fa-calendar-check input-icon"></i>
+              <input type="date" name="date_to" class="filter-input">
+            </div>
+          </div>
+
+        </div>
+
+        <div class="filter-actions">
+          <button type="submit" class="btn">
+            <i class="fas fa-search"></i>
+            تطبيق
+          </button>
+
+          <a href="{{ url_for('report') }}" class="btn btn-ghost">
+            <i class="fas fa-rotate-right"></i>
+            إعادة ضبط
+          </a>
+
+          <a href="{{ url_for('export_csv') }}" target="_blank" class="btn btn-success">
+            <i class="fas fa-file-csv"></i>
+            CSV
+          </a>
+
+          <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-right"></i>
+            رجوع
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- RESULTS -->
+<div class="section">
+  <div class="results-section">
+    <div class="results-info">
+      <div class="results-count">
+        <i class="fas fa-list"></i>
+        تم العثور على {{ tickets|length }} تذكرة
+      </div>
+
+      <div class="results-actions">
+        <a href="{{ url_for('export_csv') }}" target="_blank" class="btn btn-success btn-sm">
+          <i class="fas fa-download"></i>
+          تصدير
+        </a>
+      </div>
+    </div>
+
+    {% if tickets %}
+      <div class="table-container">
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th>رقم التذكرة</th>
+              <th>المُرسل</th>
+              <th>الغرفة</th>
+              <th>الفئة</th>
+              <th>الحالة</th>
+              <th>مُسند إلى</th>
+              <th>تاريخ الإنشاء</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for ticket in tickets %}
+            <tr>
+              <td><strong style="color: var(--primary-hover);">#{{ ticket.id }}</strong></td>
+
+              <td>
+                <div class="user-info">
+                  <div class="user-name">
+                    {{ ticket.submitter.full_name if ticket.submitter and ticket.submitter.full_name else ticket.submitter.username if ticket.submitter else '—' }}
+                  </div>
+                  <div class="user-avatar-sm">
+                    {{ (ticket.submitter.full_name[0] if ticket.submitter and ticket.submitter.full_name else (ticket.submitter.username[0] if ticket.submitter else 'U')) }}
+                  </div>
+                </div>
+              </td>
+
+              <td><strong>{{ ticket.room }}</strong></td>
+
+              <td><span class="category-badge">{{ ticket.category }}</span></td>
+
+              <td>
+                <span class="status-badge status-{{ ticket.status.lower().replace(' ', '-') }}">
+                  {% if ticket.status == 'Open' %}مفتوح
+                  {% elif ticket.status == 'In Progress' %}جارٍ العمل
+                  {% elif ticket.status == 'Escalated' %}مُصعد
+                  {% elif ticket.status == 'Resolved' %}تم الحل
+                  {% elif ticket.status == 'Closed' %}مغلق
+                  {% else %}{{ ticket.status }}
+                  {% endif %}
+                </span>
+              </td>
+
+              <td>
+                {% if ticket.assigned_to %}
+                  <div class="user-info">
+                    <div class="user-name">
+                      {{ ticket.assigned_to.full_name if ticket.assigned_to.full_name else ticket.assigned_to.username }}
+                    </div>
+                    <div class="user-avatar-sm">
+                      {{ (ticket.assigned_to.full_name[0] if ticket.assigned_to.full_name else ticket.assigned_to.username[0]) }}
+                    </div>
+                  </div>
+                {% else %}
+                  <span style="color: var(--text-muted); font-style: italic;">غير مُسند</span>
+                {% endif %}
+              </td>
+
+              <td>
+                <div style="font-weight: 900; color: var(--text-primary);">{{ ticket.created_at.strftime('%Y-%m-%d') }}</div>
+                <div style="font-size: 10px; color: var(--text-muted); font-weight: 800;">{{ ticket.created_at.strftime('%H:%M') }}</div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <i class="fas fa-chart-line"></i>
+        <h3>لم يتم العثور على تذاكر</h3>
+        <p>لا توجد تذاكر تطابق معايير التصفية الحالية.</p>
+        <p style="margin-top: 8px;">حاول تعديل المرشحات أو إزالة بعض المعايير.</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  // CSV export mini loading state
+  document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('a[href*="export_csv"]').forEach(link => {
+      link.addEventListener('click', function () {
+        const original = this.innerHTML;
+        this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جارٍ التصدير...';
+        this.style.pointerEvents = 'none';
+        setTimeout(() => { this.innerHTML = original; this.style.pointerEvents = 'auto'; }, 2500);
+      });
+    });
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,1047 @@
+{% extends "base.html" %}
+
+{% block title %}ZENTRA - تفاصيل التذكرة #{{ ticket.id }}{% endblock %}
+
+{% block page_title %}تفاصيل التذكرة #{{ ticket.id }}{% endblock %}
+
+{% block extra_head %}
+<style>
+/* Content Area Layout */
+.content-area {
+    display: flex;
+    gap: 15px;
+    height: 100%;
+}
+
+.ticket-content {
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 8px;
+}
+
+.chat-panel {
+    width: 350px;
+    background: var(--bg-primary);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* Enhanced Card Sections - Compact */
+.card-section {
+    background: var(--bg-primary);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    margin-bottom: 15px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+    animation: fadeInUp 0.4s ease forwards;
+    transition: var(--transition-fast);
+}
+
+.card-section:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.section-header {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-light);
+    font-family: 'Cairo', sans-serif;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.section-icon {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+/* Compact User Details Card */
+.user-details-card {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.user-avatar-large {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: white;
+    font-size: 18px;
+    font-family: 'Cairo', sans-serif;
+    box-shadow: var(--shadow-sm);
+    flex-shrink: 0;
+}
+
+.user-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+    flex: 1;
+}
+
+.user-info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.info-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+    font-weight: 700;
+    font-family: 'Cairo', sans-serif;
+}
+
+.info-value {
+    font-size: 14px;
+    color: var(--text-primary);
+    font-weight: 700;
+    font-family: 'Cairo', sans-serif;
+}
+
+.info-value.highlight {
+    color: var(--primary-hover);
+    font-weight: 700;
+}
+
+/* Compact Ticket Details Grid */
+.ticket-details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.ticket-detail-item {
+    background: var(--bg-secondary);
+    padding: 12px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-light);
+    transition: var(--transition-fast);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.ticket-detail-item:hover {
+    border-color: var(--border-color);
+    box-shadow: var(--shadow-sm);
+}
+
+.detail-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    font-size: 13px;
+    background: var(--bg-tertiary);
+    flex-shrink: 0;
+}
+
+.detail-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.detail-label {
+    font-size: 10px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin-bottom: 2px;
+    font-weight: 700;
+    font-family: 'Cairo', sans-serif;
+}
+
+.detail-value {
+    font-size: 13px;
+    color: var(--text-primary);
+    font-weight: 700;
+    font-family: 'Cairo', sans-serif;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Description Box - Compact */
+.description-section {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    padding: 15px;
+    margin-top: 15px;
+    position: relative;
+}
+
+.description-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--primary-color);
+}
+
+.description-text {
+    line-height: 1.6;
+    color: var(--text-primary);
+    font-family: 'Cairo', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+}
+
+/* Action Buttons */
+.action-group {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+}
+
+.btn-danger {
+    background: #2d3748;
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #1a202c;
+}
+
+.btn-success {
+    background: #4a5568;
+    color: white;
+}
+
+.btn-success:hover {
+    background: #2d3748;
+}
+
+/* Chat Panel */
+.chat-header {
+    background: var(--bg-secondary);
+    padding: 12px 15px;
+    border-bottom: 1px solid var(--border-color);
+    font-weight: 700;
+    color: var(--text-primary);
+    font-family: 'Cairo', sans-serif;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.chat-header::before {
+    content: '💬';
+    font-size: 16px;
+}
+
+.chat-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+}
+
+/* Attachments Section */
+.attachments-section {
+    padding: 12px 15px;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+}
+
+.attachments-title {
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 10px;
+    font-family: 'Cairo', sans-serif;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+}
+
+.attachments-title::before {
+    content: '📎';
+    font-size: 14px;
+}
+
+.attachment-item {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-light);
+    padding: 10px;
+    margin-bottom: 8px;
+    border-radius: var(--radius-sm);
+    transition: var(--transition-fast);
+}
+
+.attachment-item:hover {
+    border-color: var(--border-color);
+}
+
+.attachment-link {
+    color: var(--primary-hover);
+    text-decoration: none;
+    font-weight: 700;
+    font-family: 'Cairo', sans-serif;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+}
+
+.attachment-link:hover {
+    text-decoration: underline;
+}
+
+.attachment-meta {
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 4px;
+    font-family: 'Cairo', sans-serif;
+    font-weight: 700;
+}
+
+/* Upload Section */
+.upload-section {
+    padding: 12px 15px;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--bg-primary);
+}
+
+.file-input-label {
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 14px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background: var(--bg-secondary);
+    font-weight: 700;
+    color: var(--text-primary);
+    font-family: 'Cairo', sans-serif;
+    transition: var(--transition-fast);
+    gap: 6px;
+    font-size: 12px;
+}
+
+.file-input-label:hover {
+    background: var(--primary-light);
+    border-color: var(--primary-color);
+    color: var(--primary-hover);
+}
+
+/* Comments List */
+.comments-list {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+    background: var(--bg-primary);
+}
+
+.comment-item {
+    max-width: 85%;
+    padding: 10px 14px;
+    margin-bottom: 10px;
+    border-radius: 12px;
+    position: relative;
+    word-wrap: break-word;
+    box-shadow: var(--shadow-sm);
+    font-size: 12px;
+    line-height: 1.5;
+    font-family: 'Cairo', sans-serif;
+    font-weight: 700;
+}
+
+.comment-sent {
+    margin-right: auto;
+    background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e0 100%);
+    border-bottom-left-radius: 4px;
+}
+
+.comment-received {
+    margin-left: auto;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-bottom-right-radius: 4px;
+}
+
+.comment-author {
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+    font-size: 11px;
+}
+
+.comment-text {
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.comment-time {
+    font-size: 9px;
+    color: var(--text-muted);
+    text-align: left;
+    user-select: none;
+}
+
+/* Reactions UI */
+.comment-reactions {
+    display: flex;
+    gap: 6px;
+    margin-top: 6px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.reaction-btn {
+    border: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border-radius: 999px;
+    padding: 4px 8px;
+    font-size: 11px;
+    font-family: 'Cairo', sans-serif;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: var(--transition-fast);
+    user-select: none;
+}
+
+.reaction-btn:hover {
+    background: var(--primary-light);
+    border-color: var(--border-dark);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+.reaction-btn.active {
+    background: #e2e8f0;
+    border-color: #94a3b8;
+}
+
+.reaction-count {
+    font-size: 11px;
+    color: var(--text-secondary);
+    font-weight: 800;
+}
+
+.quick-react {
+    position: absolute;
+    top: 8px;
+    left: 10px;
+    opacity: 0;
+    transition: var(--transition-fast);
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+.comment-item:hover .quick-react {
+    opacity: 1;
+}
+
+/* Comment Input */
+.comment-input {
+    padding: 12px 15px;
+    border-top: 1px solid var(--border-color);
+    background: var(--bg-primary);
+}
+
+.comment-textarea {
+    width: 100%;
+    min-height: 60px;
+    padding: 10px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    resize: vertical;
+    font-size: 12px;
+    font-family: 'Cairo', sans-serif;
+    font-weight: 700;
+    margin-bottom: 10px;
+    text-align: right;
+    direction: rtl;
+    transition: var(--transition-fast);
+}
+
+.comment-textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(45, 55, 72, 0.1);
+}
+
+.comment-textarea::placeholder {
+    color: var(--text-muted);
+    font-family: 'Cairo', sans-serif;
+    font-weight: 700;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .content-area {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .chat-panel {
+        width: 100%;
+        height: 400px;
+    }
+
+    .user-details-card {
+        flex-direction: column;
+        gap: 12px;
+        text-align: center;
+    }
+
+    .user-info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .ticket-details-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .action-group {
+        flex-direction: column;
+    }
+
+    .card-section {
+        padding: 15px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="content-area">
+    <!-- Ticket Content -->
+    <div class="ticket-content">
+        <!-- Enhanced User Information Card -->
+        <div class="card-section">
+            <div class="section-header">
+                <div class="section-icon"><i class="fas fa-user"></i></div>
+                معلومات المستخدم
+            </div>
+            <div class="user-details-card">
+                <div class="user-avatar-large">
+                    {{ ticket.submitter.full_name[0] if ticket.submitter.full_name else ticket.submitter.username[0] }}
+                </div>
+                <div class="user-info-grid">
+                    <div class="user-info-item">
+                        <div class="info-label">المُرسل</div>
+                        <div class="info-value highlight">{{ ticket.submitter.full_name }}</div>
+                    </div>
+                    <div class="user-info-item">
+                        <div class="info-label">اسم المستخدم</div>
+                        <div class="info-value">{{ ticket.submitter.username }}</div>
+                    </div>
+                    <div class="user-info-item">
+                        <div class="info-label">مُسند إلى</div>
+                        <div class="info-value">{{ ticket.assigned_to.full_name if ticket.assigned_to else 'غير مُسند' }}</div>
+                    </div>
+                    {% if current_user.role in ['admin', 'it_staff'] and ticket.assigned_to_id %}
+                        <div class="user-info-item">
+                            <div class="info-label">عنوان IP</div>
+                            <div class="info-value">{{ ticket.ip_address or 'غير معروف' }}</div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Enhanced Ticket Details Card -->
+        <div class="card-section">
+            <div class="section-header">
+                <div class="section-icon"><i class="fas fa-ticket-alt"></i></div>
+                تفاصيل التذكرة
+            </div>
+            <div class="ticket-details-grid">
+                <div class="ticket-detail-item">
+                    <div class="detail-icon"><i class="fas fa-tags"></i></div>
+                    <div class="detail-content">
+                        <div class="detail-label">الفئة</div>
+                        <div class="detail-value">{{ ticket.category }}</div>
+                    </div>
+                </div>
+                <div class="ticket-detail-item">
+                    <div class="detail-icon"><i class="fas fa-door-open"></i></div>
+                    <div class="detail-content">
+                        <div class="detail-label">الغرفة</div>
+                        <div class="detail-value">{{ ticket.room }}</div>
+                    </div>
+                </div>
+                <div class="ticket-detail-item">
+                    <div class="detail-icon"><i class="fas fa-info-circle"></i></div>
+                    <div class="detail-content">
+                        <div class="detail-label">الحالة</div>
+                        <div class="detail-value">
+                            <span class="status-badge status-{{ ticket.status.lower().replace(' ', '-') }}">
+                                {% if ticket.status == 'Open' %}مفتوح
+                                {% elif ticket.status == 'In Progress' %}جارٍ العمل
+                                {% elif ticket.status == 'Escalated' %}مُصعد
+                                {% elif ticket.status == 'Resolved' %}تم الحل
+                                {% elif ticket.status == 'Closed' %}مغلق
+                                {% else %}{{ ticket.status }}
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="ticket-detail-item">
+                    <div class="detail-icon"><i class="fas fa-calendar-plus"></i></div>
+                    <div class="detail-content">
+                        <div class="detail-label">تاريخ الإنشاء</div>
+                        <div class="detail-value">{{ ticket.created_at.strftime('%Y-%m-%d %I:%M %p') }}</div>
+                    </div>
+                </div>
+                <div class="ticket-detail-item">
+                    <div class="detail-icon"><i class="fas fa-clock"></i></div>
+                    <div class="detail-content">
+                        <div class="detail-label">آخر تحديث</div>
+                        <div class="detail-value">{{ ticket.updated_at.strftime('%Y-%m-%d %I:%M %p') }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="description-section">
+                <div class="info-label" style="margin-bottom: 15px; color: var(--text-primary); font-size: 16px;">الوصف</div>
+                <div class="description-text">{{ ticket.description }}</div>
+            </div>
+        </div>
+
+        <!-- Actions Section -->
+        {% if current_user.role in ['admin', 'it_staff'] and ticket.assigned_to_id == current_user.id %}
+        <div class="card-section">
+            <div class="section-header">
+                <div class="section-icon"><i class="fas fa-cogs"></i></div>
+                الإجراءات
+            </div>
+            <form method="POST" id="statusForm">
+                <input type="hidden" name="action" value="change_status">
+                <div class="form-group">
+                    <label class="form-label" for="status">تغيير الحالة:</label>
+                    <select name="status" class="form-control" required>
+                        <option value="Open" {% if ticket.status == 'Open' %}selected{% endif %}>مفتوح</option>
+                        <option value="In Progress" {% if ticket.status == 'In Progress' %}selected{% endif %}>جارٍ العمل</option>
+                        <option value="Escalated" {% if ticket.status == 'Escalated' %}selected{% endif %}>مُصعد</option>
+                        <option value="Resolved" {% if ticket.status == 'Resolved' %}selected{% endif %}>تم الحل</option>
+                        <option value="Closed" {% if ticket.status == 'Closed' %}selected{% endif %}>مغلق</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn">
+                    <i class="fas fa-sync-alt"></i>
+                    تحديث الحالة
+                </button>
+            </form>
+        </div>
+        {% endif %}
+
+        {% if current_user.role == 'admin' and ticket.status == 'Escalated' %}
+        <div class="card-section">
+            <div class="section-header">
+                <div class="section-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                إجراءات التصعيد
+            </div>
+            <div class="action-group">
+                <form method="post" style="display:inline;">
+                    <input type="hidden" name="action" value="accept_escalated_ticket">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-check"></i>
+                        قبول التذكرة
+                    </button>
+                </form>
+                <form method="post" style="display:inline;">
+                    <input type="hidden" name="action" value="decline_escalated_ticket">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-times"></i>
+                        رفض التذكرة
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if current_user.role in ['admin', 'it_staff'] and ticket.assigned_to_id and ticket.assigned_to_id != current_user.id %}
+        <div class="card-section">
+            <div class="section-header">
+                <div class="section-icon"><i class="fas fa-exchange-alt"></i></div>
+                طلب إعادة الإسناد
+            </div>
+            <form method="post" id="reassignForm">
+                <input type="hidden" name="action" value="request_reassignment">
+                <div class="form-group">
+                    <textarea name="reason" class="form-control" rows="3" placeholder="سبب إعادة الإسناد" required></textarea>
+                </div>
+                <button type="submit" class="btn">
+                    <i class="fas fa-exchange-alt"></i>
+                    إرسال الطلب
+                </button>
+            </form>
+        </div>
+        {% endif %}
+
+        {% if reassignment_request %}
+        <div class="card-section">
+            <div class="section-header">
+                <div class="section-icon"><i class="fas fa-clock"></i></div>
+                طلب إعادة الإسناد الخاص بك
+            </div>
+            <div class="user-info-item">
+                <p><strong>الحالة:</strong> {{ reassignment_request.status }}</p>
+                <p><strong>السبب:</strong> {{ reassignment_request.reason }}</p>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if pending_requests %}
+        <div class="card-section">
+            <div class="section-header">
+                <div class="section-icon"><i class="fas fa-hourglass-half"></i></div>
+                طلبات إعادة الإسناد المعلقة
+            </div>
+            {% for req in pending_requests %}
+            <div style="background: var(--bg-secondary); padding: 20px; border-radius: var(--radius-lg); margin-bottom: 20px; border: 1px solid var(--border-color);">
+                <p><strong>{{ req.requested_by.full_name }}</strong> طلب إعادة الإسناد</p>
+                <p><strong>السبب:</strong> {{ req.reason }}</p>
+                <form method="post" style="margin-top: 15px;">
+                    <input type="hidden" name="action" value="handle_reassignment">
+                    <input type="hidden" name="request_id" value="{{ req.id }}">
+                    <div class="action-group">
+                        <button type="submit" name="decision" value="accept" class="btn btn-success">
+                            <i class="fas fa-check"></i>
+                            قبول
+                        </button>
+                        <button type="submit" name="decision" value="reject" class="btn btn-danger">
+                            <i class="fas fa-times"></i>
+                            رفض
+                        </button>
+                    </div>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="action-group">
+            <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-right"></i>
+                العودة للوحة التحكم
+            </a>
+        </div>
+    </div>
+
+    <!-- Chat Panel -->
+    <div class="chat-panel">
+        <div class="chat-header">التواصل والملفات</div>
+
+        <div class="chat-content">
+            <!-- Attachments Section -->
+            <div class="attachments-section">
+                <div class="attachments-title">المرفقات</div>
+                <div class="attachments-list">
+                    {% if ticket.attachments %}
+                        {% for attachment in ticket.attachments %}
+                            <div class="attachment-item">
+                                <a href="{{ url_for('uploads', filename=attachment.filename) }}" target="_blank" class="attachment-link">
+                                    <i class="fas fa-file"></i>
+                                    {{ attachment.filename }}
+                                </a>
+                                <div class="attachment-meta">
+                                    تم رفعه من {{ attachment.uploaded_by.full_name }}<br>
+                                    {{ attachment.uploaded_at.strftime('%Y-%m-%d %I:%M %p') }}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p style="color: var(--text-muted); font-style: italic;">لا توجد مرفقات.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- File Upload Section -->
+            <div class="upload-section">
+                <form action="{{ url_for('ticket_detail', ticket_id=ticket.id) }}" method="post" enctype="multipart/form-data" style="width: 100%;">
+                    <input type="hidden" name="action" value="upload_file">
+                    <label for="file-upload" class="file-input-label">
+                        <i class="fas fa-paperclip"></i>
+                        اختر ملف للرفع
+                    </label>
+                    <input type="file" name="file" id="file-upload"
+                        accept=".pdf,.doc,.docx,.txt,.zip,image/*"
+                        style="display: none;"
+                        onchange="this.form.submit()">
+                </form>
+            </div>
+
+            <!-- Comments List -->
+            <div class="comments-list" id="commentsList">
+                {% for comment in comments %}
+                    {% if comment.user.id == current_user.id %}
+                        <!-- Message from current user -->
+                        <div class="comment-item comment-sent" data-comment-id="{{ comment.id }}">
+                            <span class="quick-react" title="تفاعل سريع" onclick="toggleQuickReactions(event, {{ comment.id }})">
+                                <i class="fa-regular fa-face-smile"></i>
+                            </span>
+
+                            <div class="comment-text">{{ comment.comment }}</div>
+                            <div class="comment-time">{{ comment.created_at.strftime('%Y-%m-%d %I:%M %p') }}</div>
+
+                            <!-- Reactions Bar -->
+                            <div class="comment-reactions" id="reactions-{{ comment.id }}">
+                                <button type="button" class="reaction-btn" onclick="reactToMessage({{ comment.id }}, 'like')">
+                                    <i class="fa-solid fa-thumbs-up"></i>
+                                    <span class="reaction-count" id="count-{{ comment.id }}-like">0</span>
+                                </button>
+
+                                <button type="button" class="reaction-btn" onclick="reactToMessage({{ comment.id }}, 'love')">
+                                    <i class="fa-solid fa-heart"></i>
+                                    <span class="reaction-count" id="count-{{ comment.id }}-love">0</span>
+                                </button>
+
+                                <button type="button" class="reaction-btn" onclick="reactToMessage({{ comment.id }}, 'laugh')">
+                                    <i class="fa-solid fa-face-laugh"></i>
+                                    <span class="reaction-count" id="count-{{ comment.id }}-laugh">0</span>
+                                </button>
+
+                                <button type="button" class="reaction-btn" onclick="reactToMessage({{ comment.id }}, 'sad')">
+                                    <i class="fa-solid fa-face-sad-tear"></i>
+                                    <span class="reaction-count" id="count-{{ comment.id }}-sad">0</span>
+                                </button>
+
+                                <button type="button" class="reaction-btn" onclick="reactToMessage({{ comment.id }}, 'angry')">
+                                    <i class="fa-solid fa-face-angry"></i>
+                                    <span class="reaction-count" id="count-{{ comment.id }}-angry">0</span>
+                                </button>
+                            </div>
+                        </div>
+                    {% else %}
+                        <!-- Message from others -->
+                        <div class="comment-item comment-received" data-comment-id="{{ comment.id }}">
+                            <span class="quick-react" title="تفاعل سريع" onclick="toggleQuickReactions(event, {{ comment.id }})">
+                                <i class="fa-regular fa-face-smile"></i>
+                            </span>
+
+                            <div class="comment-author">{{ comment.user.full_name }}</div>
+                            <div class="comment-text">{{ comment.comment }}</div>
+                            <div class="comment-time">{{ comment.created_at.strftime('%Y-%m-%d %I:%M %p') }}</div>
+
+                            <!-- Reactions Bar -->
+                            <div class="comment-reactions" id="reactions-{{ comment.id }}">
+                                <button type="button" class="reaction-btn" onclick="reactToMessage({{ comment.id }}, 'like')">
+                                    <i class="fa-solid fa-thumbs-up"></i>
+                                    <span class="reaction-count" id="count-{{ comment.id }}-like">0</span>
+                                </button>
+
+                                <button type="button" class="reaction-btn" onclick="reactToMessage({{ comment.id }}, 'love')">
+                                    <i class="fa-solid fa-heart"></i>
+                                    <span class="reaction-count" id="count-{{ comment.id }}-love">0</span>
+                                </button>
+
+                                <button type="button" class="reaction-btn" onclick="reactToMessage({{ comment.id }}, 'laugh')">
+                                    <i class="fa-solid fa-face-laugh"></i>
+                                    <span class="reaction-count" id="count-{{ comment.id }}-laugh">0</span>
+                                </button>
+
+                                <button type="button" class="reaction-btn" onclick="reactToMessage({{ comment.id }}, 'sad')">
+                                    <i class="fa-solid fa-face-sad-tear"></i>
+                                    <span class="reaction-count" id="count-{{ comment.id }}-sad">0</span>
+                                </button>
+
+                                <button type="button" class="reaction-btn" onclick="reactToMessage({{ comment.id }}, 'angry')">
+                                    <i class="fa-solid fa-face-angry"></i>
+                                    <span class="reaction-count" id="count-{{ comment.id }}-angry">0</span>
+                                </button>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+
+            <!-- Comment Input -->
+            <div class="comment-input">
+                <form method="post" id="commentForm">
+                    <input type="hidden" name="action" value="add_comment">
+                    <textarea name="comment" class="comment-textarea" id="commentTextarea" placeholder="اكتب تعليقك هنا..." required></textarea>
+                    <button type="submit" class="btn" id="sendCommentBtn">
+                        <i class="fas fa-paper-plane"></i>
+                        إرسال
+                    </button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // Auto-scroll comments to bottom
+    function scrollToBottom() {
+        const commentsList = document.getElementById('commentsList');
+        if (commentsList) commentsList.scrollTop = commentsList.scrollHeight;
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        scrollToBottom();
+        initReactions();
+    });
+
+    // File upload feedback
+    const fileUploadInput = document.getElementById('file-upload');
+    if (fileUploadInput) {
+        fileUploadInput.addEventListener('change', function(e) {
+            if (e.target.files.length > 0) {
+                const label = document.querySelector('.file-input-label');
+                label.style.background = 'var(--success-color)';
+                label.style.color = 'white';
+                label.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جارٍ الرفع...';
+            }
+        });
+    }
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && e.key === 'Enter') {
+            const commentForm = document.getElementById('commentForm');
+            const textarea = document.getElementById('commentTextarea');
+            if (textarea && textarea.value.trim()) commentForm.submit();
+        }
+    });
+
+    // Form submission loading states
+    const statusForm = document.getElementById('statusForm');
+    if (statusForm) {
+        statusForm.addEventListener('submit', function() {
+            const submitBtn = this.querySelector('button[type="submit"]');
+            submitBtn.classList.add('loading');
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جارٍ التحديث...';
+            submitBtn.disabled = true;
+        });
+    }
+
+    const commentForm = document.getElementById('commentForm');
+    if (commentForm) {
+        commentForm.addEventListener('submit', function() {
+            const submitBtn = document.getElementById('sendCommentBtn');
+            submitBtn.classList.add('loading');
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جارٍ الإرسال...';
+            submitBtn.disabled = true;
+        });
+    }
+
+    // Confirm dangerous actions
+    document.querySelectorAll('.btn-danger').forEach(button => {
+        button.addEventListener('click', function(e) {
+            if (!confirm('هل أنت متأكد من هذا الإجراء؟')) e.preventDefault();
+        });
+    });
+
+    // =========================
+    // Reactions (Front-end)
+    // =========================
+
+    function storageKey(ticketId) {
+        return `reactions_ticket_${ticketId}`;
+    }
+
+    function getTicketId() {
+        return "{{ ticket.id }}";
+    }
+
+    function initReactions() {
+        const ticketId = getTicketId();
+        const raw = localStorage.getItem(storageKey(ticketId));
+        const data = raw ? JSON.parse(raw) : {};
+
+        document.querySelectorAll('.comment-item[data-comment-id]').forEach(el => {
+            const commentId = el.getAttribute('data-comment-id');
+            const record = data[commentId] || {};
+
+            ['like','love','laugh','sad','angry'].forEach(type => {
+                const countEl = document.getElementById(`count-${commentId}-${type}`);
+                if (countEl) countEl.textContent = record[type] || 0;
+
+                const btn = el.querySelector(`.reaction-btn[onclick*="'${type}'"]`);
+                if (btn && record.my && record.my[type]) btn.classList.add('active');
+            });
+        });
+    }
+
+    function reactToMessage(commentId, reactionType) {
+        const ticketId = getTicketId();
+        const raw = localStorage.getItem(storageKey(ticketId));
+        const data = raw ? JSON.parse(raw) : {};
+
+        if (!data[commentId]) {
+            data[commentId] = { like:0, love:0, laugh:0, sad:0, angry:0, my:{} };
+        }
+        if (!data[commentId].my) data[commentId].my = {};
+
+        const already = !!data[commentId].my[reactionType];
+
+        if (already) {
+            data[commentId][reactionType] = Math.max(0, (data[commentId][reactionType] || 0) - 1);
+            data[commentId].my[reactionType] = false;
+        } else {
+            data[commentId][reactionType] = (data[commentId][reactionType] || 0) + 1;
+            data[commentId].my[reactionType] = true;
+        }
+
+        localStorage.setItem(storageKey(ticketId), JSON.stringify(data));
+
+        const countEl = document.getElementById(`count-${commentId}-${reactionType}`);
+        if (countEl) countEl.textContent = data[commentId][reactionType] || 0;
+
+        const messageEl = document.querySelector(`.comment-item[data-comment-id="${commentId}"]`);
+        if (messageEl) {
+            const btns = messageEl.querySelectorAll('.reaction-btn');
+            btns.forEach(btn => {
+                const oc = btn.getAttribute('onclick') || '';
+                if (oc.includes(`'${reactionType}'`)) {
+                    btn.classList.toggle('active', !already);
+                }
+            });
+        }
+    }
+
+    function toggleQuickReactions(e, commentId) {
+        e.preventDefault();
+        e.stopPropagation();
+        reactToMessage(commentId, 'like');
+    }
+</script>
+{% endblock %}

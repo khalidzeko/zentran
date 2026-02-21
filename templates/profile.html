@@ -1,0 +1,641 @@
+{% extends "base.html" %}
+
+{% block title %}الملف الشخصي - ZENTRA{% endblock %}
+{% block page_title %}الملف الشخصي{% endblock %}
+
+{% block extra_head %}
+<style>
+/* =========================
+   PROFILE v2 (Redesigned)
+   - Clean hero with cover + glass card
+   - Two-column layout: Info + Quick Stats
+   - Copy-on-click fields
+   - Same grayscale system
+========================= */
+
+.profile-wrap{
+  max-width: 1050px;
+  margin: 0 auto;
+  animation: pFade .45s ease both;
+}
+@keyframes pFade{ from{opacity:0; transform:translateY(12px)} to{opacity:1; transform:translateY(0)} }
+
+/* HERO */
+.profile-hero{
+  position: relative;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  background: var(--bg-primary);
+  margin-bottom: 16px;
+}
+
+.profile-cover{
+  height: 120px;
+  background:
+    radial-gradient(1200px 200px at 30% 0%, rgba(255,255,255,.12), rgba(255,255,255,0)),
+    linear-gradient(135deg, var(--primary-hover), var(--primary-color));
+  position: relative;
+}
+
+.profile-cover::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:
+    linear-gradient(0deg, rgba(255,255,255,.04), rgba(255,255,255,0));
+}
+
+.profile-hero-card{
+  display:flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px;
+  margin: -42px 14px 14px;
+  background: rgba(255,255,255,.92);
+  backdrop-filter: blur(10px);
+  border-radius: var(--radius-xl);
+  border: 1px solid rgba(226,232,240,.9);
+  box-shadow: var(--shadow-md);
+}
+
+.hero-left{
+  display:flex;
+  align-items:center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.avatar-box{
+  width: 84px;
+  height: 84px;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.avatar{
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  background: var(--bg-primary);
+  border: 3px solid #fff;
+  box-shadow: var(--shadow-md);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  color: var(--primary-color);
+  font-weight: 900;
+  font-size: 26px;
+}
+
+.avatar img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.avatar-btn{
+  position:absolute;
+  bottom: -2px;
+  left: -2px;
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  border: 2px solid #fff;
+  background: var(--primary-color);
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition-fast);
+  font-size: 12px;
+}
+.avatar-btn:hover{ background: var(--primary-hover); transform: scale(1.06); }
+
+.hero-meta{
+  min-width: 0;
+}
+.hero-name{
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.hero-sub{
+  display:flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items:center;
+}
+
+.badge{
+  display:inline-flex;
+  align-items:center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  font-size: 10px;
+  font-weight: 900;
+}
+.badge i{ color: var(--text-muted); font-size: 11px; }
+
+.hero-actions{
+  display:flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content:flex-end;
+  align-items:center;
+}
+
+/* BUTTONS */
+.pbtn{
+  height: 34px;
+  padding: 0 12px;
+  border-radius: var(--radius-md);
+  font-size: 11px;
+  font-weight: 900;
+  font-family: 'Cairo', sans-serif;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap: 6px;
+  cursor:pointer;
+  text-decoration:none;
+  transition: var(--transition-fast);
+  border: 1px solid transparent;
+}
+.pbtn-primary{
+  background: var(--primary-color);
+  color:#fff;
+}
+.pbtn-primary:hover{ background: var(--primary-hover); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.pbtn-ghost{
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  border-color: var(--border-color);
+}
+.pbtn-ghost:hover{ background: var(--bg-secondary); color: var(--text-primary); border-color: var(--border-dark); }
+
+/* LAYOUT */
+.profile-grid{
+  display:grid;
+  grid-template-columns: 1.35fr .9fr;
+  gap: 16px;
+}
+
+/* CARDS */
+.pcard{
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  overflow:hidden;
+}
+.pcard-h{
+  padding: 12px 14px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.pcard-title{
+  display:flex;
+  align-items:center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--text-primary);
+}
+.pcard-title i{ color: var(--text-muted); font-size: 13px; }
+
+.pcard-body{ padding: 12px 14px; }
+
+/* FIELD LIST */
+.fields{
+  display:flex;
+  flex-direction: column;
+}
+.field{
+  display:flex;
+  align-items:flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--border-light);
+}
+.field:last-child{ border-bottom: none; }
+
+.k{
+  flex: 0 0 120px;
+  font-size: 10px;
+  font-weight: 900;
+  color: var(--text-secondary);
+}
+.v{
+  flex: 1;
+  font-size: 11px;
+  font-weight: 900;
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+  user-select: none;
+}
+.v:hover{ text-decoration: underline; text-underline-offset: 3px; }
+.v small{ color: var(--text-muted); font-weight: 800; }
+
+.role-pill{
+  display:inline-flex;
+  align-items:center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: var(--primary-light);
+  border: 1px solid rgba(45,55,72,.18);
+  color: var(--primary-color);
+  font-size: 10px;
+  font-weight: 900;
+}
+
+/* QUICK STATS */
+.stats{
+  display:grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+.stat{
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-color);
+  background: var(--bg-primary);
+  box-shadow: var(--shadow-sm);
+  padding: 12px 14px;
+  position: relative;
+  overflow:hidden;
+}
+.stat::before{
+  content:'';
+  position:absolute;
+  top:0; left:0; right:0;
+  height:2px;
+  background: linear-gradient(90deg, var(--primary-color), var(--primary-hover));
+}
+.stat-top{
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.stat-label{
+  font-size: 10px;
+  font-weight: 900;
+  color: var(--text-secondary);
+}
+.stat-icon{
+  width: 28px;
+  height: 28px;
+  border-radius: 10px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color: var(--text-muted);
+}
+.stat-num{
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--text-primary);
+  margin-top: 6px;
+}
+
+/* INFO STRIP */
+.info-strip{
+  margin-top: 10px;
+  display:flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.info-item{
+  flex: 1 1 160px;
+  min-width: 160px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-xl);
+  padding: 10px 12px;
+}
+.info-item .t{
+  font-size: 10px;
+  font-weight: 900;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+.info-item .d{
+  font-size: 11px;
+  font-weight: 900;
+  color: var(--text-primary);
+}
+
+/* RESPONSIVE */
+@media (max-width: 980px){
+  .profile-grid{ grid-template-columns: 1fr; }
+  .hero-actions{ width:100%; justify-content:flex-start; }
+  .profile-hero-card{ flex-wrap: wrap; }
+}
+
+@media (max-width: 520px){
+  .k{ flex-basis: 95px; }
+  .profile-cover{ height: 110px; }
+  .avatar-box{ width: 78px; height: 78px; }
+  .avatar{ width: 78px; height: 78px; font-size: 24px; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-wrap">
+
+  <!-- HERO -->
+  <div class="profile-hero">
+    <div class="profile-cover"></div>
+
+    <div class="profile-hero-card">
+      <div class="hero-left">
+        <div class="avatar-box">
+          <div class="avatar" id="profilePicture">
+            {% if current_user.profile_picture %}
+              <img src="{{ url_for('uploads', filename=current_user.profile_picture) }}" alt="الصورة الشخصية">
+            {% else %}
+              {{ current_user.full_name[0].upper() }}{% if current_user.full_name and current_user.full_name.split()|length > 1 %}{{ current_user.full_name.split()[1][0].upper() }}{% endif %}
+            {% endif %}
+          </div>
+
+          <button class="avatar-btn" type="button" onclick="uploadProfilePicture()" title="تغيير الصورة">
+            <i class="fas fa-camera"></i>
+          </button>
+
+          <input type="file" id="profilePictureInput" style="display:none" accept="image/*" onchange="handleProfilePictureUpload(event)">
+        </div>
+
+        <div class="hero-meta">
+          <div class="hero-name">{{ current_user.full_name }}</div>
+          <div class="hero-sub">
+            <span class="badge">
+              <i class="fas fa-shield-alt"></i>
+              {% if current_user.role == 'admin' %}مدير نظام
+              {% elif current_user.role == 'it_staff' %}فريق تقني
+              {% elif current_user.role == 'manager' %}مدير
+              {% elif current_user.role == 'supervisor' %}مشرف
+              {% else %}مستخدم{% endif %}
+            </span>
+            <span class="badge"><i class="fas fa-door-open"></i>{{ current_user.room }}</span>
+            <span class="badge"><i class="fas fa-hashtag"></i>#{{ current_user.id }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-actions">
+        {% if current_user.role in ['admin','it_staff'] %}
+          <a class="pbtn pbtn-primary" href="{{ url_for('edit_user', user_id=current_user.id) }}">
+            <i class="fas fa-edit"></i> تعديل
+          </a>
+        {% endif %}
+        <a class="pbtn pbtn-ghost" href="{{ url_for('dashboard') }}">
+          <i class="fas fa-arrow-right"></i> رجوع
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- GRID -->
+  <div class="profile-grid">
+
+    <!-- LEFT: DETAILS -->
+    <div>
+      <div class="pcard">
+        <div class="pcard-h">
+          <div class="pcard-title"><i class="fas fa-id-card"></i> البيانات الأساسية</div>
+        </div>
+        <div class="pcard-body">
+          <div class="fields">
+            <div class="field">
+              <div class="k">اسم المستخدم</div>
+              <div class="v" data-copy="{{ current_user.username }}">{{ current_user.username }}</div>
+            </div>
+            <div class="field">
+              <div class="k">البريد</div>
+              <div class="v" data-copy="{{ current_user.email }}">{{ current_user.email }}</div>
+            </div>
+            <div class="field">
+              <div class="k">الدور</div>
+              <div class="v" data-copy="{{ current_user.role }}">
+                <span class="role-pill">
+                  <i class="fas fa-shield-alt"></i>
+                  {% if current_user.role == 'admin' %}مدير نظام
+                  {% elif current_user.role == 'it_staff' %}فريق تقني
+                  {% elif current_user.role == 'manager' %}مدير
+                  {% elif current_user.role == 'supervisor' %}مشرف
+                  {% else %}مستخدم{% endif %}
+                </span>
+              </div>
+            </div>
+            <div class="field">
+              <div class="k">الغرفة</div>
+              <div class="v" data-copy="{{ current_user.room }}">{{ current_user.room }}</div>
+            </div>
+            <div class="field">
+              <div class="k">القسم</div>
+              <div class="v">
+                {% if current_user.role == 'admin' %}
+                  الإدارة العامة
+                {% elif current_user.role == 'it_staff' %}
+                  تكنولوجيا المعلومات
+                {% elif current_user.role in ['manager','supervisor'] %}
+                  إدارة - {{ current_user.room }}
+                {% else %}
+                  قسم {{ current_user.room }}
+                {% endif %}
+              </div>
+            </div>
+            <div class="field">
+              <div class="k">حالة الحساب</div>
+              <div class="v" data-copy="نشط">
+                <span style="display:inline-flex;align-items:center;gap:6px;">
+                  <i class="fas fa-circle" style="font-size:6px;color:#4a5568"></i> نشط
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="info-strip">
+            <div class="info-item">
+              <div class="t">ملاحظة</div>
+              <div class="d">انقر على أي قيمة لنسخها</div>
+            </div>
+            <div class="info-item">
+              <div class="t">معرف المستخدم</div>
+              <div class="d">#{{ current_user.id }}</div>
+            </div>
+            <div class="info-item">
+              <div class="t">آخر تحديث</div>
+              <div class="d"><small style="color:var(--text-muted)">—</small></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: STATS -->
+    <div>
+      <div class="pcard">
+        <div class="pcard-h">
+          <div class="pcard-title"><i class="fas fa-chart-bar"></i> إحصائيات سريعة</div>
+        </div>
+        <div class="pcard-body">
+          <div class="stats">
+            <div class="stat">
+              <div class="stat-top">
+                <div class="stat-label">إجمالي التذاكر</div>
+                <div class="stat-icon"><i class="fas fa-layer-group"></i></div>
+              </div>
+              <div class="stat-num" id="totalTickets">{{ total_tickets|default(0) }}</div>
+            </div>
+
+            <div class="stat">
+              <div class="stat-top">
+                <div class="stat-label">التذاكر المفتوحة</div>
+                <div class="stat-icon"><i class="fas fa-folder-open"></i></div>
+              </div>
+              <div class="stat-num" id="openTickets">{{ open_tickets|default(0) }}</div>
+            </div>
+
+            <div class="stat">
+              <div class="stat-top">
+                <div class="stat-label">التذاكر المحلولة</div>
+                <div class="stat-icon"><i class="fas fa-check"></i></div>
+              </div>
+              <div class="stat-num" id="resolvedTickets">{{ resolved_tickets|default(0) }}</div>
+            </div>
+          </div>
+
+          <div style="margin-top:12px; font-size:10px; font-weight:900; color:var(--text-muted);">
+            * الأرقام يتم تمريرها من الـ Backend (total_tickets / open_tickets / resolved_tickets)
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  // ===== Toast =====
+  function showToast(message, type='info'){
+    const bg = (type==='success') ? '#4a5568' : (type==='error') ? '#dc2626' : '#2d3748';
+    const icon = (type==='success') ? 'fa-check-circle' : (type==='error') ? 'fa-exclamation-circle' : 'fa-info-circle';
+    const el = document.createElement('div');
+
+    el.style.cssText = `
+      position: fixed; top: 90px; right: 24px;
+      background: ${bg}; color: #fff;
+      padding: 12px 16px; border-radius: 12px;
+      font-family: 'Cairo', sans-serif; font-weight: 900; font-size: 12px;
+      z-index: 9999; box-shadow: 0 12px 20px rgba(0,0,0,.18);
+      max-width: 380px; animation: slideIn .22s ease both;
+    `;
+    el.innerHTML = `<i class="fas ${icon}" style="margin-left:8px"></i>${message}`;
+    document.body.appendChild(el);
+
+    setTimeout(() => {
+      el.style.animation = 'slideOut .22s ease both';
+      setTimeout(() => el.remove(), 220);
+    }, 2400);
+  }
+
+  (function injectToastCss(){
+    const s = document.createElement('style');
+    s.textContent = `
+      @keyframes slideIn{ from{ transform:translateX(12px); opacity:0 } to{ transform:translateX(0); opacity:1 } }
+      @keyframes slideOut{ from{ transform:translateX(0); opacity:1 } to{ transform:translateX(12px); opacity:0 } }
+    `;
+    document.head.appendChild(s);
+  })();
+
+  // ===== Copy on click =====
+  document.addEventListener('DOMContentLoaded', function(){
+    document.querySelectorAll('[data-copy]').forEach(el => {
+      el.title = 'انقر للنسخ';
+      el.addEventListener('click', function(){
+        const txt = this.getAttribute('data-copy') || this.textContent.trim();
+        navigator.clipboard.writeText(txt)
+          .then(() => showToast('تم النسخ ✅', 'success'))
+          .catch(() => showToast('لم يتم النسخ', 'error'));
+      });
+    });
+  });
+
+  // ===== Avatar upload =====
+  function uploadProfilePicture(){
+    document.getElementById('profilePictureInput').click();
+  }
+
+  function handleProfilePictureUpload(event){
+    const file = event.target.files[0];
+    if(!file) return;
+
+    if(file.size > 5 * 1024 * 1024){
+      showToast('حجم الملف كبير جداً. اختر صورة أقل من 5MB.', 'error');
+      event.target.value = '';
+      return;
+    }
+
+    const allowed = ['image/jpeg','image/jpg','image/png','image/gif','image/webp'];
+    if(!allowed.includes(file.type)){
+      showToast('نوع الملف غير مدعوم. استخدم JPG / PNG / GIF / WEBP.', 'error');
+      event.target.value = '';
+      return;
+    }
+
+    const pic = document.getElementById('profilePicture');
+    const original = pic.innerHTML;
+    pic.innerHTML = '<i class="fas fa-spinner fa-spin" style="font-size:28px;color:var(--primary-color)"></i>';
+
+    const formData = new FormData();
+    formData.append('profile_picture', file);
+
+    fetch('/profile/upload_picture', { method:'POST', body: formData })
+      .then(r => r.json())
+      .then(data => {
+        if(data.success){
+          pic.innerHTML = `<img src="${data.image_url}" alt="الصورة الشخصية">`;
+          showToast(data.message || 'تم تحديث الصورة بنجاح', 'success');
+        }else{
+          pic.innerHTML = original;
+          showToast(data.message || 'فشل رفع الصورة', 'error');
+        }
+      })
+      .catch(() => {
+        pic.innerHTML = original;
+        showToast('حدث خطأ أثناء رفع الصورة. حاول مرة أخرى.', 'error');
+      })
+      .finally(() => {
+        event.target.value = '';
+      });
+  }
+</script>
+{% endblock %}

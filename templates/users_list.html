@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+
+{% block title %}قائمة المستخدمين - ZENTRA{% endblock %}
+{% block page_title %}إدارة المستخدمين{% endblock %}
+
+{% block extra_head %}
+<style>
+  /* Make table match the base theme */
+  .users-card {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+  }
+
+  .users-header {
+    padding: 20px 30px;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .users-title {
+    margin: 0;
+    font-size: 18px;
+    font-family: 'Cairo', sans-serif;
+    font-weight: 800;
+    color: var(--text-primary);
+  }
+
+  .users-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  table.users-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 900px;
+    background: var(--bg-primary);
+  }
+
+  .users-table th,
+  .users-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border-light);
+    text-align: right;
+    white-space: nowrap;
+    font-family: 'Cairo', sans-serif;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  .users-table thead th {
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    font-size: 13px;
+  }
+
+  .users-table tbody tr:hover {
+    background: var(--bg-secondary);
+  }
+
+  .actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .action-link {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 800;
+    font-size: 13px;
+  }
+
+  .action-link:hover {
+    text-decoration: underline;
+  }
+
+  .delete-form {
+    display: inline;
+  }
+
+  .delete-button {
+    color: #991b1b;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-family: 'Cairo', sans-serif;
+    font-weight: 800;
+    font-size: 13px;
+    padding: 0;
+    text-decoration: underline;
+  }
+
+  .delete-button:hover {
+    opacity: 0.85;
+  }
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 14px;
+    color: var(--primary-color);
+    text-decoration: none;
+    font-family: 'Cairo', sans-serif;
+    font-weight: 800;
+  }
+
+  .back-link:hover {
+    text-decoration: underline;
+  }
+
+  /* Mobile tweaks */
+  @media (max-width: 768px) {
+    table.users-table {
+      min-width: 750px;
+    }
+    .users-header {
+      padding: 15px 18px;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="users-card animate-fade-in">
+  <div class="users-header">
+    <h2 class="users-title">جميع المستخدمين</h2>
+  </div>
+
+  <div class="users-table-wrap">
+    <table class="users-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>اسم المستخدم</th>
+          <th>الاسم الكامل</th>
+          <th>البريد</th>
+          <th>الدور</th>
+          <th>الغرفة</th>
+          <th>الإجراءات</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for user in users %}
+        <tr>
+          <td>{{ user.id }}</td>
+          <td>{{ user.username }}</td>
+          <td>{{ user.full_name }}</td>
+          <td>{{ user.email }}</td>
+          <td>{{ user.role }}</td>
+          <td>{{ user.room }}</td>
+          <td>
+            <div class="actions">
+              <a class="action-link" href="{{ url_for('edit_user', user_id=user.id) }}">تعديل</a>
+
+              {% if current_user and current_user.id != user.id %}
+                <span style="color: var(--text-light);">|</span>
+                <form class="delete-form" method="POST"
+                      action="{{ url_for('delete_user', user_id=user.id) }}"
+                      onsubmit="return confirm('هل أنت متأكد من حذف المستخدم {{ user.username }} ؟');">
+                  <button type="submit" class="delete-button">حذف</button>
+                </form>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<a class="back-link" href="{{ url_for('dashboard') }}">← الرجوع إلى لوحة التحكم</a>
+{% endblock %}
