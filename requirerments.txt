@@ -1,0 +1,8 @@
+Flask==3.2.0
+gunicorn==21.2.0
+Flask-SQLAlchemy
+Flask-Login
+Flask-Bcrypt
+Flask-Mail
+ldap3
+pytz
